@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_favorites"
-            android:icon="@drawable/ic_menu_favorites"
-            android:title="Favorites"/>
-        <item
-            android:id="@+id/nav_category_management"
-            android:icon="@drawable/ic_menu_category_management"
-            android:title="Category Management"/>
-        <item
-            android:id="@+id/nav_about_me"
-            android:icon="@drawable/ic_menu_about_me"
-            android:title="About Me"/>
-    </group>
+    <item
+        android:id="@+id/nav_favorites"
+        android:icon="@drawable/ic_menu_favorites"
+        android:title="Favorites"/>
+    <item
+        android:id="@+id/nav_category_management"
+        android:icon="@drawable/ic_menu_category_management"
+        android:title="Category Management"/>
+    <item
+        android:id="@+id/nav_about_me"
+        android:icon="@drawable/ic_menu_about_me"
+        android:title="About Me"/>
 
 </menu>
