@@ -37,6 +37,8 @@
                     android:text="I Am Content With Love &amp; Appreciation, Anushka Sharma Talks"
                     android:textColor="@android:color/black"
                     android:id="@+id/titleTextView"
+                    android:lines="3"
+                    android:ellipsize="end"
                     android:layout_marginTop="18dp"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentLeft="true"

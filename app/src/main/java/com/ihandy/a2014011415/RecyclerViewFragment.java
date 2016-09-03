@@ -14,7 +14,11 @@ import com.github.florent37.materialviewpager.header.MaterialViewPagerHeaderDeco
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,12 +27,18 @@ public class RecyclerViewFragment extends Fragment {
 
     static final boolean GRID_LAYOUT = false;
     //private static final int ITEM_COUNT = 10;
+    private int mPosition;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private List<Object> mContentItems = new ArrayList<>();
+    private ContentThread mContentThread;
 
     public static RecyclerViewFragment newInstance() {
         return new RecyclerViewFragment();
+    }
+
+    public void setPosition(int position) {
+        mPosition = position;
     }
 
     @Override
@@ -58,8 +68,8 @@ public class RecyclerViewFragment extends Fragment {
         //mAdapter = new RecyclerViewMaterialAdapter();
         mRecyclerView.setAdapter(mAdapter);
 
-        MainActivity activity = (MainActivity)MainActivity.getContext();
-        JSONArray newsList = activity.getNewsList();
+        JSONArray newsList = getNewsList();
+
         if (newsList != null) {
             for (int i = 0; i < newsList.length(); ++i) {
                 try {
@@ -69,6 +79,62 @@ public class RecyclerViewFragment extends Fragment {
                 }
             }
             mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public JSONArray getNewsList() {
+        mContentThread = new ContentThread();
+        mContentThread.setCategory(mPosition);
+        mContentThread.start();
+        mContentThread.join();
+        return mContentThread.getNewsList();
+    }
+
+    class ContentThread implements Runnable {
+        private int num = 0;
+        private Thread thread;
+        private JSONArray newsList;
+
+        public ContentThread() {
+            thread = new Thread(this);
+        }
+        public void setCategory(int num) {
+            this.num = num;
+        }
+        public JSONArray getNewsList() {
+            return newsList;
+        }
+        public void start() {
+            thread.start();
+        }
+        public void join() {
+            try {
+                thread.join();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        public void run() {
+            URL url = null;
+            BufferedReader in = null;
+            String text = "", inputLine;
+            try {
+                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + MainActivity.getNewsCategories().get(num));
+                in = new BufferedReader(new InputStreamReader(url.openStream()));
+                while ((inputLine = in.readLine()) != null) {
+                    text = text + inputLine + "\n";
+                }
+                in.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                JSONObject jsonObject = new JSONObject(text);
+                JSONObject data = jsonObject.getJSONObject("data");
+                newsList = data.getJSONArray("news");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

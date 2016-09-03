@@ -20,7 +20,6 @@ import android.widget.Toast;
 import com.github.florent37.materialviewpager.MaterialViewPager;
 import com.github.florent37.materialviewpager.header.HeaderDesign;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,8 +43,7 @@ public class MainActivity extends AppCompatActivity
     private static Context context;
 
     private Thread mThread;
-    private ContentThread mContentThread;
-    private ArrayList<String> newsCategories = new ArrayList<>();
+    private static ArrayList<String> newsCategories = new ArrayList<>();
 
     private int DefaultCategoryCount = 10;
 
@@ -85,6 +83,10 @@ public class MainActivity extends AppCompatActivity
             }
         }
     };
+
+    public static ArrayList<String> getNewsCategories() {
+        return newsCategories;
+    }
 
     public static Context getContext() {
         return context;
@@ -134,17 +136,15 @@ public class MainActivity extends AppCompatActivity
 
         if (newsCategories.size() > 0) {
             DefaultCategoryCount = newsCategories.size();
-            mContentThread = new ContentThread();
-            mContentThread.setCategory(0);
-            mContentThread.start();
-            mContentThread.join();
         }
 
         mViewPager.getViewPager().setAdapter(new FragmentStatePagerAdapter(getSupportFragmentManager()) {
 
             @Override
             public Fragment getItem(int position) {
-                return RecyclerViewFragment.newInstance();
+                RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
+                fragment.setPosition(position);
+                return fragment;
             }
 
             @Override
@@ -163,11 +163,7 @@ public class MainActivity extends AppCompatActivity
         mViewPager.setMaterialViewPagerListener(new MaterialViewPager.Listener() {
             @Override
             public HeaderDesign getHeaderDesign(int page) {
-                mContentThread = new ContentThread();
-                mContentThread.setCategory(page);
-                mContentThread.start();
-                mContentThread.join();
-
+                //System.out.println(page);
                 switch (page) {
                     case 0:
                         return HeaderDesign.fromColorResAndUrl(
@@ -248,56 +244,4 @@ public class MainActivity extends AppCompatActivity
                 super.onOptionsItemSelected(item);
     }
 
-    public JSONArray getNewsList() {
-        return mContentThread.getNewsList();
-    }
-
-
-    class ContentThread implements Runnable {
-        private int num = 0;
-        private Thread thread;
-        private JSONArray newsList;
-
-        public ContentThread() {
-            thread = new Thread(this);
-        }
-        public void setCategory(int num) {
-            this.num = num;
-        }
-        public JSONArray getNewsList() {
-            return newsList;
-        }
-        public void start() {
-            thread.start();
-        }
-        public void join() {
-            try {
-                thread.join();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        public void run() {
-            URL url = null;
-            BufferedReader in = null;
-            String text = "", inputLine;
-            try {
-                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + newsCategories.get(num));
-                in = new BufferedReader(new InputStreamReader(url.openStream()));
-                while ((inputLine = in.readLine()) != null) {
-                    text = text + inputLine + "\n";
-                }
-                in.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                JSONObject jsonObject = new JSONObject(text);
-                JSONObject data = jsonObject.getJSONObject("data");
-                newsList = data.getJSONArray("news");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

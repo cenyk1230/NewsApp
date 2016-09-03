@@ -99,23 +99,6 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
         });
     }
 
-    private Bitmap getBitmap(String stringURL) {
-        System.out.println(stringURL);
-        Bitmap bitmap = null;
-        try {
-            URL url = new URL(stringURL);
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-            conn.setDoInput(true);
-            conn.connect();
-            InputStream is = conn.getInputStream();
-            bitmap = BitmapFactory.decodeStream(is);
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bitmap;
-    }
-
     public class TestRecyclerViewHolder extends RecyclerView.ViewHolder {
         public TextView titleTextView;
         public TextView sourceTextView;
