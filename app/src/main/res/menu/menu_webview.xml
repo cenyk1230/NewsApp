@@ -11,9 +11,9 @@
         android:icon="@drawable/share"
         app:showAsAction="always"/>
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_collection"
         android:orderInCategory="100"
-        android:title="collection"
+        android:title="collection_0"
         android:icon="@drawable/non_favorite"
         app:showAsAction="always"/>
 

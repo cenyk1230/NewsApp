@@ -57,6 +57,18 @@ public class WebViewActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_collection) {
+            if (item.getTitle().equals("collection_0")) {
+                item.setTitle("collection_1");
+                item.setIcon(R.drawable.favorite);
+            } else {
+                item.setTitle("collection_0");
+                item.setIcon(R.drawable.non_favorite);
+            }
+        } else if (id == R.id.action_share) {
+
+        }
         return super.onOptionsItemSelected(item);
     }
 }
