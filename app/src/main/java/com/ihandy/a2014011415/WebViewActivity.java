@@ -1,21 +1,31 @@
 package com.ihandy.a2014011415;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class WebViewActivity extends Activity {
+public class WebViewActivity extends AppCompatActivity {
 
     private WebView newsWebView;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_webview);
+
+        mToolbar = (Toolbar)findViewById(R.id.toolbar);
+        mToolbar.setTitle("");
+        mToolbar.setNavigationIcon(R.drawable.backward_arrow);
+        setSupportActionBar(mToolbar);
+
         Intent intent = getIntent();
         String url = intent.getStringExtra("news url");
         newsWebView = (WebView)findViewById(R.id.newsWebView);
@@ -38,4 +48,15 @@ public class WebViewActivity extends Activity {
         newsWebView.loadUrl(url);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_webview, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
 }
