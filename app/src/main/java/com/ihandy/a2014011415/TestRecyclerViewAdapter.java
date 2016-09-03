@@ -1,6 +1,7 @@
 package com.ihandy.a2014011415;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -81,9 +83,10 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
 //                break;
 //        }
         JSONObject news = (JSONObject)contents.get(position);
+        JSONObject source = null;
         try {
             holder.titleTextView.setText(news.getString("title"));
-            JSONObject source = news.getJSONObject("source");
+            source = news.getJSONObject("source");
             holder.sourceTextView.setText(source.getString("name"));
             JSONArray imgs = news.getJSONArray("imgs");
             JSONObject img = imgs.getJSONObject(0);
@@ -91,12 +94,26 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
         } catch (Exception e) {
             e.printStackTrace();
         }
-        holder.rootLinearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("TestRecyclerViewAdapter", "Clicked");
+        if (source != null) {
+            try {
+                final String newsURL = source.getString("url");
+                holder.rootLinearLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.d("TestRecyclerViewAdapter", "Clicked");
+                        Intent intent = new Intent(MainActivity.getContext(), WebViewActivity.class);
+                        intent.putExtra("news url", newsURL);
+                        MainActivity.getContext().startActivity(intent);
+//                        Uri uri = Uri.parse(newsURL);
+//                        Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uri);
+//                        MainActivity.getContext().startActivity(launchBrowser);
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
+        }
+
     }
 
     public class TestRecyclerViewHolder extends RecyclerView.ViewHolder {
