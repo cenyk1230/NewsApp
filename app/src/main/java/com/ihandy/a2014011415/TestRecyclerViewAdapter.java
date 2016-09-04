@@ -97,12 +97,14 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
         if (source != null) {
             try {
                 final String newsURL = source.getString("url");
+                final long newsID = news.getLong("news_id");
                 holder.rootLinearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Log.d("TestRecyclerViewAdapter", "Clicked");
                         Intent intent = new Intent(MainActivity.getContext(), WebViewActivity.class);
                         intent.putExtra("news url", newsURL);
+                        intent.putExtra("news id", newsID);
                         MainActivity.getContext().startActivity(intent);
 //                        Uri uri = Uri.parse(newsURL);
 //                        Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uri);

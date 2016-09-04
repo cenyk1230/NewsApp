@@ -25,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity
     private ActionBarDrawerToggle mDrawerToggle;
 
     private static Context context;
+    private static HashSet<Long> favoriteNews = new HashSet<>();
     private static ArrayList<String> newsCategories = new ArrayList<>();
     private static ArrayList<String> watchedStringList = new ArrayList<>();
     private static ArrayList<String> unwatchedStringList = new ArrayList<>();
@@ -82,6 +84,10 @@ public class MainActivity extends AppCompatActivity
             }
         }
     };
+
+    public static HashSet<Long> getFavoriteNews() {
+        return favoriteNews;
+    }
 
     public static ArrayList<String> getNewsCategories() {
         return newsCategories;

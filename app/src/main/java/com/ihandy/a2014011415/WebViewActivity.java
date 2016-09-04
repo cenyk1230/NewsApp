@@ -11,10 +11,15 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.HashSet;
+
 public class WebViewActivity extends AppCompatActivity {
 
     private WebView newsWebView;
     private Toolbar mToolbar;
+    private MenuItem mFavoriteItem;
+    private HashSet<Long> mFavoriteNews;
+    private long newsID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,9 +31,14 @@ public class WebViewActivity extends AppCompatActivity {
         mToolbar.setNavigationIcon(R.drawable.backward_arrow);
         setSupportActionBar(mToolbar);
 
+        mFavoriteNews = MainActivity.getFavoriteNews();
+
         Intent intent = getIntent();
         String url = intent.getStringExtra("news url");
+        newsID = intent.getLongExtra("news id", -1L);
+
         newsWebView = (WebView)findViewById(R.id.newsWebView);
+
         //System.out.println(url);
         newsWebView.setWebViewClient(new WebViewClient() {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -52,6 +62,14 @@ public class WebViewActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_webview, menu);
+
+        mFavoriteItem = menu.findItem(R.id.action_collection);
+
+        if (mFavoriteNews.contains(newsID)) {
+            mFavoriteItem.setIcon(R.drawable.favorite);
+        } else {
+            mFavoriteItem.setIcon(R.drawable.non_favorite);
+        }
         return true;
     }
 
@@ -59,13 +77,14 @@ public class WebViewActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_collection) {
-            if (item.getTitle().equals("collection_0")) {
-                item.setTitle("collection_1");
+            if (!mFavoriteNews.contains(newsID)) {
                 item.setIcon(R.drawable.favorite);
+                MainActivity.getFavoriteNews().add(newsID);
             } else {
-                item.setTitle("collection_0");
                 item.setIcon(R.drawable.non_favorite);
+                MainActivity.getFavoriteNews().remove(newsID);
             }
+            //System.out.println(MainActivity.getFavoriteNews());
         } else if (id == R.id.action_share) {
 
         }
