@@ -25,7 +25,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 
 
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity
     private ActionBarDrawerToggle mDrawerToggle;
 
     private static Context context;
-    private static HashSet<Long> favoriteNews = new HashSet<>();
+    private static HashMap<Long, String> favoriteNews = new HashMap<>();
     private static ArrayList<String> newsCategories = new ArrayList<>();
     private static ArrayList<String> watchedStringList = new ArrayList<>();
     private static ArrayList<String> unwatchedStringList = new ArrayList<>();
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    public static HashSet<Long> getFavoriteNews() {
+    public static HashMap<Long, String> getFavoriteNews() {
         return favoriteNews;
     }
 
@@ -223,15 +223,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         //System.out.println(id);
         if (id == R.id.nav_favorites) {
-            // Handle the action
+            Intent intent = new Intent(this, FavoriteActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_category_management) {
-//            ArrayList<RecyclerViewFragment> list = new ArrayList<>();
-//            for (int i = 2; i < newsCategories.size(); ++i) {
-//                RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
-//                fragment.setCategory(newsCategories.get(i));
-//                list.add(fragment);
-//            }
-//            mViewPagerAdapter.updateList(list);
             Intent intent = new Intent(this, CategoryManagementActivity.class);
             startActivityForResult(intent, 0);
         } else if (id == R.id.nav_about_me) {

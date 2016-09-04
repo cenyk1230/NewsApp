@@ -11,15 +11,16 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import java.util.HashSet;
+import java.util.HashMap;
 
 public class WebViewActivity extends AppCompatActivity {
 
     private WebView newsWebView;
     private Toolbar mToolbar;
     private MenuItem mFavoriteItem;
-    private HashSet<Long> mFavoriteNews;
+    private HashMap<Long, String> mFavoriteNews;
     private long newsID;
+    private String newsString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,12 +31,14 @@ public class WebViewActivity extends AppCompatActivity {
         mToolbar.setTitle("");
         mToolbar.setNavigationIcon(R.drawable.backward_arrow);
         setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mFavoriteNews = MainActivity.getFavoriteNews();
 
         Intent intent = getIntent();
         String url = intent.getStringExtra("news url");
         newsID = intent.getLongExtra("news id", -1L);
+        newsString = intent.getStringExtra("news json");
 
         newsWebView = (WebView)findViewById(R.id.newsWebView);
 
@@ -65,7 +68,7 @@ public class WebViewActivity extends AppCompatActivity {
 
         mFavoriteItem = menu.findItem(R.id.action_collection);
 
-        if (mFavoriteNews.contains(newsID)) {
+        if (mFavoriteNews.containsKey(newsID)) {
             mFavoriteItem.setIcon(R.drawable.favorite);
         } else {
             mFavoriteItem.setIcon(R.drawable.non_favorite);
@@ -77,16 +80,18 @@ public class WebViewActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_collection) {
-            if (!mFavoriteNews.contains(newsID)) {
+            if (!mFavoriteNews.containsKey(newsID)) {
                 item.setIcon(R.drawable.favorite);
-                MainActivity.getFavoriteNews().add(newsID);
+                MainActivity.getFavoriteNews().put(newsID, newsString);
             } else {
                 item.setIcon(R.drawable.non_favorite);
                 MainActivity.getFavoriteNews().remove(newsID);
             }
             //System.out.println(MainActivity.getFavoriteNews());
         } else if (id == R.id.action_share) {
-
+            // Handle share event
+        } else if (id == android.R.id.home) {
+            finish();
         }
         return super.onOptionsItemSelected(item);
     }

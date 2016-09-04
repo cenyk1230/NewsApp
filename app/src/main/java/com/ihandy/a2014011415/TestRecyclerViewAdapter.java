@@ -37,6 +37,12 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
         this.contents = contents;
     }
 
+    public void UpdateList(List<Object> contents) {
+        this.contents.clear();
+        this.contents = contents;
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getItemViewType(int position) {
         switch (position) {
@@ -98,6 +104,7 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
             try {
                 final String newsURL = source.getString("url");
                 final long newsID = news.getLong("news_id");
+                final String newsString = news.toString();
                 holder.rootLinearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -105,6 +112,7 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
                         Intent intent = new Intent(MainActivity.getContext(), WebViewActivity.class);
                         intent.putExtra("news url", newsURL);
                         intent.putExtra("news id", newsID);
+                        intent.putExtra("news json", newsString);
                         MainActivity.getContext().startActivity(intent);
 //                        Uri uri = Uri.parse(newsURL);
 //                        Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uri);
