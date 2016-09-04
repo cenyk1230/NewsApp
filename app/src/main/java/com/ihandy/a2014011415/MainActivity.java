@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity
 
     private static Context context;
     private static ArrayList<String> newsCategories = new ArrayList<>();
+    private static ArrayList<String> watchedStringList = new ArrayList<>();
+    private static ArrayList<String> unwatchedStringList = new ArrayList<>();
 
     private Thread mThread;
 
@@ -83,6 +85,14 @@ public class MainActivity extends AppCompatActivity
 
     public static ArrayList<String> getNewsCategories() {
         return newsCategories;
+    }
+
+    public static ArrayList<String> getWatchedStringList() {
+        return watchedStringList;
+    }
+
+    public static ArrayList<String> getUnwatchedStringList() {
+        return unwatchedStringList;
     }
 
     public static Context getContext() {
@@ -129,6 +139,12 @@ public class MainActivity extends AppCompatActivity
             mThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+
+        watchedStringList.clear();
+        unwatchedStringList.clear();
+        for (int i = 0; i < newsCategories.size(); ++i) {
+            watchedStringList.add(newsCategories.get(i));
         }
 
         ArrayList<RecyclerViewFragment> list = new ArrayList<>();

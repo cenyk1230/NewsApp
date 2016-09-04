@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:orientation="vertical"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
-    tools:context="com.ihandy.a2014011415.CategoryManagementActivity">
+    tools:context=".CategoryManagementActivity">
 
     <include layout="@layout/toolbar"
         android:id="@+id/toolbar_category_management">
     </include>
 
-</RelativeLayout>
+    <ListView
+        android:id="@+id/listView"
+        android:divider="#00000000"
+        android:dividerHeight="0dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+    </ListView>
+</LinearLayout>
