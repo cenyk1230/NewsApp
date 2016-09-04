@@ -27,18 +27,21 @@ public class RecyclerViewFragment extends Fragment {
 
     static final boolean GRID_LAYOUT = false;
     //private static final int ITEM_COUNT = 10;
-    private int mPosition;
+    private String mCategory;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private List<Object> mContentItems = new ArrayList<>();
-    private ContentThread mContentThread;
 
     public static RecyclerViewFragment newInstance() {
         return new RecyclerViewFragment();
     }
 
-    public void setPosition(int position) {
-        mPosition = position;
+    public void setCategory(String category) {
+        mCategory = category;
+    }
+
+    public String getCategory() {
+        return mCategory;
     }
 
     @Override
@@ -83,23 +86,23 @@ public class RecyclerViewFragment extends Fragment {
     }
 
     public JSONArray getNewsList() {
-        mContentThread = new ContentThread();
-        mContentThread.setCategory(mPosition);
+        ContentThread mContentThread = new ContentThread();
+        mContentThread.setCategory(mCategory);
         mContentThread.start();
         mContentThread.join();
         return mContentThread.getNewsList();
     }
 
     class ContentThread implements Runnable {
-        private int num = 0;
+        private String category;
         private Thread thread;
         private JSONArray newsList;
 
         public ContentThread() {
             thread = new Thread(this);
         }
-        public void setCategory(int num) {
-            this.num = num;
+        public void setCategory(String category) {
+            this.category = category;
         }
         public JSONArray getNewsList() {
             return newsList;
@@ -119,7 +122,7 @@ public class RecyclerViewFragment extends Fragment {
             BufferedReader in = null;
             String text = "", inputLine;
             try {
-                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + MainActivity.getNewsCategories().get(num));
+                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + category);
                 in = new BufferedReader(new InputStreamReader(url.openStream()));
                 while ((inputLine = in.readLine()) != null) {
                     text = text + inputLine + "\n";

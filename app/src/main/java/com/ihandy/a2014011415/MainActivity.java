@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -34,6 +32,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private MaterialViewPager mViewPager;
+    private ViewPagerAdapter mViewPagerAdapter;
     private NavigationView mNaviView;
     private Toolbar toolbar;
 
@@ -41,11 +40,9 @@ public class MainActivity extends AppCompatActivity
     private ActionBarDrawerToggle mDrawerToggle;
 
     private static Context context;
-
-    private Thread mThread;
     private static ArrayList<String> newsCategories = new ArrayList<>();
 
-    private int DefaultCategoryCount = 10;
+    private Thread mThread;
 
     Runnable runnable = new Runnable() {
         @Override
@@ -134,31 +131,15 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        if (newsCategories.size() > 0) {
-            DefaultCategoryCount = newsCategories.size();
+        ArrayList<RecyclerViewFragment> list = new ArrayList<>();
+        for (int i = 0; i < newsCategories.size(); ++i) {
+            RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
+            fragment.setCategory(newsCategories.get(i));
+            list.add(fragment);
         }
 
-        mViewPager.getViewPager().setAdapter(new FragmentStatePagerAdapter(getSupportFragmentManager()) {
-
-            @Override
-            public Fragment getItem(int position) {
-                RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
-                fragment.setPosition(position);
-                return fragment;
-            }
-
-            @Override
-            public int getCount() {
-                return DefaultCategoryCount;
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                if (newsCategories.size() > position)
-                    return newsCategories.get(position);
-                return "";
-            }
-        });
+        mViewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), context, list);
+        mViewPager.getViewPager().setAdapter(mViewPagerAdapter);
 
         mViewPager.setMaterialViewPagerListener(new MaterialViewPager.Listener() {
             @Override
@@ -218,11 +199,17 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
+        System.out.println(id);
         if (id == R.id.nav_favorites) {
             // Handle the action
         } else if (id == R.id.nav_category_management) {
-
+//            ArrayList<RecyclerViewFragment> list = new ArrayList<>();
+//            for (int i = 2; i < newsCategories.size(); ++i) {
+//                RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
+//                fragment.setCategory(newsCategories.get(i));
+//                list.add(fragment);
+//            }
+//            mViewPagerAdapter.updateList(list);
         } else if (id == R.id.nav_about_me) {
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
