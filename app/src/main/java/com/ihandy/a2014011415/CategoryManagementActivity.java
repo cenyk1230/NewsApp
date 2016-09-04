@@ -35,19 +35,29 @@ public class CategoryManagementActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setEnabled(false);
 
-        watchedStringList = new ArrayList<>();
-        unwatchedStringList = new ArrayList<>();
-        for (int i = 0; i < MainActivity.getWatchedStringList().size(); ++i) {
-            watchedStringList.add(MainActivity.getWatchedStringList().get(i));
-        }
-        for (int i = 0; i < MainActivity.getUnwatchedStringList().size(); ++i) {
-            unwatchedStringList.add(MainActivity.getUnwatchedStringList().get(i));
-        }
+//        watchedStringList = new ArrayList<>();
+//        unwatchedStringList = new ArrayList<>();
+//        for (int i = 0; i < MainActivity.getWatchedStringList().size(); ++i) {
+//            watchedStringList.add(MainActivity.getWatchedStringList().get(i));
+//        }
+//        for (int i = 0; i < MainActivity.getUnwatchedStringList().size(); ++i) {
+//            unwatchedStringList.add(MainActivity.getUnwatchedStringList().get(i));
+//        }
+        watchedStringList = MainActivity.getWatchedStringList();
+        unwatchedStringList = MainActivity.getUnwatchedStringList();
 
         mData = getData();
 
         adapter = new ListViewAdapter(this);
         listView.setAdapter(adapter);
+    }
+
+    @Override
+    public void onBackPressed() {
+        //System.out.println("onBackPressed");
+        setResult(RESULT_OK);
+        finish();
+        super.onBackPressed();
     }
 
     private ArrayList<HashMap<String, Object>> getData() {
@@ -76,7 +86,7 @@ public class CategoryManagementActivity extends AppCompatActivity {
             list.add(map);
         }
 
-        System.out.println(list);
+        //System.out.println(list);
         return list;
     }
 

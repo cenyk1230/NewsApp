@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        System.out.println(id);
+        //System.out.println(id);
         if (id == R.id.nav_favorites) {
             // Handle the action
         } else if (id == R.id.nav_category_management) {
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity
 //            }
 //            mViewPagerAdapter.updateList(list);
             Intent intent = new Intent(this, CategoryManagementActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, 0);
         } else if (id == R.id.nav_about_me) {
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
@@ -249,4 +249,26 @@ public class MainActivity extends AppCompatActivity
                 super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //System.out.println(unwatchedStringList.size());
+        //System.out.println(resultCode + " : " + RESULT_OK);
+        ArrayList<RecyclerViewFragment> list = new ArrayList<>();
+        for (int i = 0; i < newsCategories.size(); ++i) {
+            Boolean watched = true;
+            for (int j = 0; j < unwatchedStringList.size(); ++j) {
+                if (newsCategories.get(i).equals(unwatchedStringList.get(j))) {
+                    watched = false;
+                    break;
+                }
+            }
+            if (!watched) {
+                continue;
+            }
+            RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
+            fragment.setCategory(newsCategories.get(i));
+            list.add(fragment);
+        }
+        mViewPagerAdapter.updateList(list);
+    }
 }
