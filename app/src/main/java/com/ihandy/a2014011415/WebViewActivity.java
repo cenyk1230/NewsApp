@@ -21,7 +21,7 @@ public class WebViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_webview);
 
-        mToolbar = (Toolbar)findViewById(R.id.toolbar);
+        mToolbar = (Toolbar)findViewById(R.id.toolbar_news_webview);
         mToolbar.setTitle("");
         mToolbar.setNavigationIcon(R.drawable.backward_arrow);
         setSupportActionBar(mToolbar);

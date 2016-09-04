@@ -210,6 +210,8 @@ public class MainActivity extends AppCompatActivity
 //                list.add(fragment);
 //            }
 //            mViewPagerAdapter.updateList(list);
+            Intent intent = new Intent(this, CategoryManagementActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_about_me) {
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);

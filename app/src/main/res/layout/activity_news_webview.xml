@@ -6,7 +6,8 @@
     android:fitsSystemWindows="true"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <include layout="@layout/toolbar">
+    <include layout="@layout/toolbar"
+        android:id="@+id/toolbar_news_webview">
     </include>
 
     <WebView xmlns:android="http://schemas.android.com/apk/res/android"
