@@ -2,6 +2,7 @@ package com.ihandy.a2014011415;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,6 +23,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -67,7 +73,7 @@ public class MainActivity extends AppCompatActivity
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //Log.d("MainActivity", text);
+            //System.out.println(text);
             try {
                 JSONObject jsonObject = new JSONObject(text);
                 JSONObject data = jsonObject.getJSONObject("data");
@@ -113,6 +119,89 @@ public class MainActivity extends AppCompatActivity
         return context;
     }
 
+    public static boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectivityManager != null && connectivityManager.getActiveNetworkInfo().isAvailable();
+    }
+
+    public static void saveCategories() {
+        JSONObject jsonObj = new JSONObject();
+        for (int i = 0; i < watchedStringList.size(); ++i) {
+            try {
+                jsonObj.put(watchedStringList.get(i), "1");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        for (int i = 0; i < unwatchedStringList.size(); ++i) {
+            try {
+                jsonObj.put(unwatchedStringList.get(i), "0");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String jsonData = jsonObj.toString();
+        //System.out.println(jsonData);
+        File file = new File(context.getExternalFilesDir(""), "Category.txt");
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        byte bytes[] = jsonData.getBytes();
+        int len = jsonData.length();
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            fos.write(bytes, 0, len);
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean loadCategoriesFromFile() {
+        File file = new File(context.getExternalFilesDir(""), "Category.txt");
+        if (!file.exists())
+            return false;
+        BufferedReader in;
+        String text = "", inputLine;
+        try {
+            in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            while ((inputLine = in.readLine()) != null) {
+                text = text + inputLine + "\n";
+            }
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        newsCategories.clear();
+        watchedStringList.clear();
+        unwatchedStringList.clear();
+        try {
+            JSONObject jsonObj = new JSONObject(text);
+            Iterator<?> it = jsonObj.keys();
+            while (it.hasNext()) {
+                String tmpString = it.next().toString();
+                newsCategories.add(tmpString);
+                if (jsonObj.getString(tmpString).equals("1")) {
+                    watchedStringList.add(tmpString);
+                } else {
+                    unwatchedStringList.add(tmpString);
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        System.out.println(newsCategories.size());
+        return newsCategories.size() > 0;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,25 +239,28 @@ public class MainActivity extends AppCompatActivity
         if (toolbar != null) {
             setSupportActionBar(toolbar);
         }
+        //System.out.println(isNetworkAvailable());
 
-        mThread = new Thread(runnable);
-        mThread.start();
-        try {
-            mThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        watchedStringList.clear();
-        unwatchedStringList.clear();
-        for (int i = 0; i < newsCategories.size(); ++i) {
-            watchedStringList.add(newsCategories.get(i));
+        if (!loadCategoriesFromFile()) {
+            mThread = new Thread(runnable);
+            mThread.start();
+            try {
+                mThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            watchedStringList.clear();
+            unwatchedStringList.clear();
+            for (int i = 0; i < newsCategories.size(); ++i) {
+                watchedStringList.add(newsCategories.get(i));
+            }
+            saveCategories();
         }
 
         ArrayList<RecyclerViewFragment> list = new ArrayList<>();
-        for (int i = 0; i < newsCategories.size(); ++i) {
+        for (int i = 0; i < watchedStringList.size(); ++i) {
             RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
-            fragment.setCategory(newsCategories.get(i));
+            fragment.setCategory(watchedStringList.get(i));
             list.add(fragment);
         }
 

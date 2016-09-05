@@ -168,6 +168,7 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 watchedStringList.add(unwatchedStringList.get(mPosition - size - 2));
                 unwatchedStringList.remove(mPosition - size - 2);
             }
+            MainActivity.saveCategories();
             mData = getData();
             adapter.notifyDataSetChanged();
         }
