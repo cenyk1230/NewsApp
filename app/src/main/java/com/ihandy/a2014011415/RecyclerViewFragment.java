@@ -103,6 +103,10 @@ public class RecyclerViewFragment extends Fragment {
 
         JSONArray newsList = getNewsList();
 
+        if (newsList == null || newsList.length() == 0) {
+            newsList = loadNewsListFromDB();
+        }
+
         if (newsList != null) {
             for (int i = 0; i < newsList.length(); ++i) {
                 try {
@@ -111,6 +115,7 @@ public class RecyclerViewFragment extends Fragment {
                     e.printStackTrace();
                 }
             }
+            saveNewsList();
             mAdapter.notifyDataSetChanged();
         }
     }
@@ -121,6 +126,38 @@ public class RecyclerViewFragment extends Fragment {
         mContentThread.start();
         mContentThread.join();
         return mContentThread.getNewsList();
+    }
+
+    public void saveNewsList() {
+        SQLiteDao sqLiteDao = new SQLiteDao();
+        for (int i = 0; i < mContentItems.size(); ++i) {
+            try {
+                long newsId = ((JSONObject)(mContentItems.get(i))).getLong("news_id");
+                String collection = "0";
+                if (MainActivity.getFavoriteNews().containsKey(newsId)) {
+                    collection = "1";
+                }
+                sqLiteDao.add(String.valueOf(newsId), mCategory, collection, ((JSONObject)(mContentItems.get(i))).toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+//        List<SQLiteDao.News> newsList = sqLiteDao.findAllInCategory(mCategory);
+//        System.out.println(newsList);
+    }
+
+    public JSONArray loadNewsListFromDB() {
+        SQLiteDao sqLiteDao = new SQLiteDao();
+        List<SQLiteDao.News> newsList = sqLiteDao.findAllInCategory(mCategory);
+        JSONArray retList = new JSONArray();
+        for (int i = 0; i < newsList.size(); ++i) {
+            try {
+                retList.put(new JSONObject(newsList.get(i).jsonData));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return retList;
     }
 
     class ContentThread implements Runnable {
