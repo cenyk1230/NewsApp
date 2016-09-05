@@ -100,7 +100,6 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         try {
             testRecyclerViewHolder.titleTextView.setText(news.getString("title"));
             testRecyclerViewHolder.sourceTextView.setText(news.getString("origin"));
-            source = news.getJSONObject("source");
             //testRecyclerViewHolder.sourceTextView.setText(source.getString("name"));
             JSONArray imgs = news.getJSONArray("imgs");
             JSONObject img = imgs.getJSONObject(0);
@@ -114,6 +113,11 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             });
             //new NormalLoadPictrue().getPicture(img.getString("url"), testRecyclerViewHolder.newsImageView);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            source = news.getJSONObject("source");
+        } catch (JSONException e) {
             e.printStackTrace();
         }
         if (source != null) {
