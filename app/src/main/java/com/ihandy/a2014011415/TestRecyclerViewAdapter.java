@@ -39,7 +39,7 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         this.contents = contents;
     }
 
-    public void UpdateList(List<Object> contents) {
+    public void updateList(List<Object> contents) {
         this.contents.clear();
         this.contents = contents;
         notifyDataSetChanged();

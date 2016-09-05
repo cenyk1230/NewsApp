@@ -27,6 +27,7 @@ import java.util.List;
 public class RecyclerViewFragment extends Fragment {
 
     //private static final int ITEM_COUNT = 10;
+    private long mNextId = -1;
     private String mCategory;
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mRefreshLayout;
@@ -82,14 +83,33 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-//                System.out.println("In onScrollStateChanged");
-//                System.out.println("lastVisibleItem: " + lastVisibleItem);
-//                System.out.println("getItemCount(): " + mAdapter.getItemCount());
                 if (newState == RecyclerView.SCROLL_STATE_IDLE
                         && lastVisibleItem + 1 == mAdapter.getItemCount()
                         && mAdapter.isShowFooter())
                 {
-                    Toast.makeText(getActivity().getApplicationContext(), "Loading...", Toast.LENGTH_SHORT).show();
+                    System.out.println("onScrollStateChanged");
+                    //Toast.makeText(getActivity().getApplicationContext(), "Loading...", Toast.LENGTH_SHORT).show();
+                    if (mNextId == -1) {
+                        Toast.makeText(getActivity().getApplicationContext(), "No Older News", Toast.LENGTH_SHORT).show();
+                    } else {
+                        List<Object> tmpContentItems = new ArrayList<>();
+                        tmpContentItems.addAll(mContentItems);
+                        JSONArray tmpNewsList = getNewsList(mNextId);
+                        System.out.println(tmpNewsList);
+                        if (tmpNewsList != null) {
+                            for (int i = 0; i < tmpNewsList.length(); ++i) {
+                                try {
+                                    tmpContentItems.add(tmpNewsList.getJSONObject(i));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            mContentItems = tmpContentItems;
+                            saveNewsList();
+                            mAdapter.updateList(mContentItems);
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    }
                 }
             }
 
@@ -122,6 +142,14 @@ public class RecyclerViewFragment extends Fragment {
 
     public JSONArray getNewsList() {
         ContentThread mContentThread = new ContentThread();
+        mContentThread.setCategory(mCategory);
+        mContentThread.start();
+        mContentThread.join();
+        return mContentThread.getNewsList();
+    }
+
+    public JSONArray getNewsList(long next_id) {
+        ContentThread mContentThread = new ContentThread(next_id);
         mContentThread.setCategory(mCategory);
         mContentThread.start();
         mContentThread.join();
@@ -164,8 +192,13 @@ public class RecyclerViewFragment extends Fragment {
         private String category;
         private Thread thread;
         private JSONArray newsList;
+        private long next_id = -1;
 
         public ContentThread() {
+            thread = new Thread(this);
+        }
+        public ContentThread(long next_id) {
+            this.next_id = next_id;
             thread = new Thread(this);
         }
         public void setCategory(String category) {
@@ -189,7 +222,10 @@ public class RecyclerViewFragment extends Fragment {
             BufferedReader in = null;
             String text = "", inputLine;
             try {
-                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + category);
+                if (next_id == -1)
+                    url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + category);
+                else
+                    url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + category + "&max_news_id=" + String.valueOf(next_id));
                 in = new BufferedReader(new InputStreamReader(url.openStream()));
                 while ((inputLine = in.readLine()) != null) {
                     text = text + inputLine + "\n";
@@ -201,6 +237,11 @@ public class RecyclerViewFragment extends Fragment {
             try {
                 JSONObject jsonObject = new JSONObject(text);
                 JSONObject data = jsonObject.getJSONObject("data");
+                if (data.has("next_id")) {
+                    mNextId = data.getLong("next_id");
+                } else {
+                    mNextId = -1;
+                }
                 newsList = data.getJSONArray("news");
             } catch (JSONException e) {
                 e.printStackTrace();

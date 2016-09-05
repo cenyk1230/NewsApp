@@ -59,6 +59,6 @@ public class FavoriteActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        mAdapter.UpdateList(mContentItems);
+        mAdapter.updateList(mContentItems);
     }
 }
