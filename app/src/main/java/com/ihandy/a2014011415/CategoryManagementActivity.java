@@ -140,7 +140,7 @@ public class CategoryManagementActivity extends AppCompatActivity {
                 holder.itemTitle.setVisibility(View.INVISIBLE);
                 holder.smallItemTitle.setVisibility(View.VISIBLE);
                 holder.imageView.setVisibility(View.VISIBLE);
-                holder.smallItemTitle.setText((String)mData.get(i).get("SmallItemTitle"));
+                holder.smallItemTitle.setText(MainActivity.getCategoryMap().get((String)mData.get(i).get("SmallItemTitle")));
                 if (((String)(mData.get(i).get("Orientation"))).equals("Down")) {
                     holder.imageView.setImageResource(R.drawable.down_arrow);
                 } else {

@@ -37,7 +37,7 @@ public class ViewPagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return mList.get(position).getCategory();
+        return MainActivity.getCategoryMap().get(mList.get(position).getCategory());
     }
 
     @Override

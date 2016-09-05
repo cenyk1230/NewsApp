@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -50,6 +49,7 @@ public class MainActivity extends AppCompatActivity
     private static AsyncImageLoader imageLoader;
     private static HashMap<Long, String> favoriteNews = new HashMap<>();
     private static ArrayList<String> newsCategories = new ArrayList<>();
+    private static HashMap<String, String> categoryMap = new HashMap<>();
     private static ArrayList<String> watchedStringList = new ArrayList<>();
     private static ArrayList<String> unwatchedStringList = new ArrayList<>();
 
@@ -80,7 +80,9 @@ public class MainActivity extends AppCompatActivity
                 JSONObject categories = data.getJSONObject("categories");
                 Iterator<?> it = categories.keys();
                 while (it.hasNext()) {
-                    newsCategories.add(it.next().toString());
+                    String key = it.next().toString();
+                    newsCategories.add(key);
+                    categoryMap.put(key, categories.getString(key));
                 }
 //                JSONArray categories = data.getJSONArray("categories");
 //                for (int i = 0; i < categories.length(); ++i) {
@@ -89,14 +91,18 @@ public class MainActivity extends AppCompatActivity
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            for (int i = 0; i < newsCategories.size(); ++i) {
-                Log.d("MainActivity", newsCategories.get(i));
-            }
+//            for (int i = 0; i < newsCategories.size(); ++i) {
+//                Log.d("MainActivity", newsCategories.get(i));
+//            }
         }
     };
 
     public static HashMap<Long, String> getFavoriteNews() {
         return favoriteNews;
+    }
+
+    public static HashMap<String, String> getCategoryMap() {
+        return categoryMap;
     }
 
     public static ArrayList<String> getNewsCategories() {
@@ -125,20 +131,35 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static void saveCategories() {
-        JSONObject jsonObj = new JSONObject();
+        JSONObject subJsonObj = new JSONObject();
         for (int i = 0; i < watchedStringList.size(); ++i) {
             try {
-                jsonObj.put(watchedStringList.get(i), "1");
+                subJsonObj.put(watchedStringList.get(i), "1");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
         for (int i = 0; i < unwatchedStringList.size(); ++i) {
             try {
-                jsonObj.put(unwatchedStringList.get(i), "0");
+                subJsonObj.put(unwatchedStringList.get(i), "0");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+        JSONObject subJsonObj2 = new JSONObject();
+        for (String key: categoryMap.keySet()) {
+            try {
+                subJsonObj2.put(key, categoryMap.get(key));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        JSONObject jsonObj = new JSONObject();
+        try {
+            jsonObj.put("favorite", subJsonObj);
+            jsonObj.put("name", subJsonObj2);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         String jsonData = jsonObj.toString();
         //System.out.println(jsonData);
@@ -180,25 +201,32 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         newsCategories.clear();
+        categoryMap.clear();
         watchedStringList.clear();
         unwatchedStringList.clear();
         try {
             JSONObject jsonObj = new JSONObject(text);
-            Iterator<?> it = jsonObj.keys();
+            JSONObject jsonObj1 = jsonObj.getJSONObject("favorite");
+            Iterator<?> it = jsonObj1.keys();
             while (it.hasNext()) {
                 String tmpString = it.next().toString();
                 newsCategories.add(tmpString);
-                if (jsonObj.getString(tmpString).equals("1")) {
+                if (jsonObj1.getString(tmpString).equals("1")) {
                     watchedStringList.add(tmpString);
                 } else {
                     unwatchedStringList.add(tmpString);
                 }
             }
-
+            JSONObject jsonObj2 = jsonObj.getJSONObject("name");
+            it = jsonObj2.keys();
+            while (it.hasNext()) {
+                String tmpString = it.next().toString();
+                categoryMap.put(tmpString, jsonObj2.getString(tmpString));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        System.out.println(newsCategories.size());
+        //System.out.println(newsCategories.size());
         return newsCategories.size() > 0;
     }
 
