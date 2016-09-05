@@ -18,7 +18,6 @@ import android.widget.Toast;
 import com.github.florent37.materialviewpager.MaterialViewPager;
 import com.github.florent37.materialviewpager.header.HeaderDesign;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,6 +26,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 
 public class MainActivity extends AppCompatActivity
@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity
     private ActionBarDrawerToggle mDrawerToggle;
 
     private static Context context;
+    private static AsyncImageLoader imageLoader;
     private static HashMap<Long, String> favoriteNews = new HashMap<>();
     private static ArrayList<String> newsCategories = new ArrayList<>();
     private static ArrayList<String> watchedStringList = new ArrayList<>();
@@ -70,15 +71,15 @@ public class MainActivity extends AppCompatActivity
             try {
                 JSONObject jsonObject = new JSONObject(text);
                 JSONObject data = jsonObject.getJSONObject("data");
-//                JSONObject categories = data.getJSONObject("categories");
-//                Iterator<?> it = categories.keys();
-//                while (it.hasNext()) {
-//                    newsCategories.add(it.next().toString());
-//                }
-                JSONArray categories = data.getJSONArray("categories");
-                for (int i = 0; i < categories.length(); ++i) {
-                    newsCategories.add(categories.getString(i));
+                JSONObject categories = data.getJSONObject("categories");
+                Iterator<?> it = categories.keys();
+                while (it.hasNext()) {
+                    newsCategories.add(it.next().toString());
                 }
+//                JSONArray categories = data.getJSONArray("categories");
+//                for (int i = 0; i < categories.length(); ++i) {
+//                    newsCategories.add(categories.getString(i));
+//                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -102,6 +103,10 @@ public class MainActivity extends AppCompatActivity
 
     public static ArrayList<String> getUnwatchedStringList() {
         return unwatchedStringList;
+    }
+
+    public static AsyncImageLoader getImageLoader() {
+        return imageLoader;
     }
 
     public static Context getContext() {
@@ -133,6 +138,10 @@ public class MainActivity extends AppCompatActivity
         toolbar = mViewPager.getToolbar();
 
         context = this;
+
+        imageLoader = new AsyncImageLoader(getApplicationContext());
+        imageLoader.setCache2File(true);
+        imageLoader.setCachedDir(this.getCacheDir().getAbsolutePath());
 
         mNaviView = (NavigationView) findViewById(R.id.nav_view);
         mNaviView.setItemIconTintList(null);

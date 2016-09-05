@@ -103,7 +103,15 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
             testRecyclerViewHolder.sourceTextView.setText(source.getString("name"));
             JSONArray imgs = news.getJSONArray("imgs");
             JSONObject img = imgs.getJSONObject(0);
-            new NormalLoadPictrue().getPicture(img.getString("url"), testRecyclerViewHolder.newsImageView);
+            final ImageView iv = testRecyclerViewHolder.newsImageView;
+            MainActivity.getImageLoader().downloadImage(img.getString("url"), true, new AsyncImageLoader.ImageCallback() {
+                @Override
+                public void onImageLoaded(Bitmap bitmap, String imageUrl) {
+                    if (bitmap != null)
+                        iv.setImageBitmap(bitmap);
+                }
+            });
+            //new NormalLoadPictrue().getPicture(img.getString("url"), testRecyclerViewHolder.newsImageView);
         } catch (Exception e) {
             e.printStackTrace();
         }
