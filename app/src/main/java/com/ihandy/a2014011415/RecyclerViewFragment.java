@@ -3,12 +3,13 @@ package com.ihandy.a2014011415;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.github.florent37.materialviewpager.header.MaterialViewPagerHeaderDecorator;
 
@@ -25,11 +26,12 @@ import java.util.List;
 
 public class RecyclerViewFragment extends Fragment {
 
-    static final boolean GRID_LAYOUT = false;
     //private static final int ITEM_COUNT = 10;
     private String mCategory;
     private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private SwipeRefreshLayout mRefreshLayout;
+    private LinearLayoutManager mLayoutManager;
+    private TestRecyclerViewAdapter mAdapter;
     private List<Object> mContentItems = new ArrayList<>();
 
     public static RecyclerViewFragment newInstance() {
@@ -53,23 +55,51 @@ public class RecyclerViewFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
-        RecyclerView.LayoutManager layoutManager;
 
-        if (GRID_LAYOUT) {
-            layoutManager = new GridLayoutManager(getActivity(), 2);
-        } else {
-            layoutManager = new LinearLayoutManager(getActivity());
-        }
-        mRecyclerView.setLayoutManager(layoutManager);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(true);
 
         //Use this now
         mRecyclerView.addItemDecoration(new MaterialViewPagerHeaderDecorator());
 
         mAdapter = new TestRecyclerViewAdapter(mContentItems);
-
-        //mAdapter = new RecyclerViewMaterialAdapter();
         mRecyclerView.setAdapter(mAdapter);
+
+        mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Toast.makeText(getActivity().getApplicationContext(), "No Updated News", Toast.LENGTH_SHORT).show();
+                mRefreshLayout.setRefreshing(false);
+            }
+        });
+
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private int lastVisibleItem;
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+//                System.out.println("In onScrollStateChanged");
+//                System.out.println("lastVisibleItem: " + lastVisibleItem);
+//                System.out.println("getItemCount(): " + mAdapter.getItemCount());
+                if (newState == RecyclerView.SCROLL_STATE_IDLE
+                        && lastVisibleItem + 1 == mAdapter.getItemCount()
+                        && mAdapter.isShowFooter())
+                {
+                    Toast.makeText(getActivity().getApplicationContext(), "Loading...", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                lastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
+            }
+        });
+
 
         JSONArray newsList = getNewsList();
 

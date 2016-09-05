@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.github.florent37.materialviewpager.MaterialViewPager;
 import com.github.florent37.materialviewpager.header.HeaderDesign;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,7 +27,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 
 public class MainActivity extends AppCompatActivity
@@ -70,11 +70,14 @@ public class MainActivity extends AppCompatActivity
             try {
                 JSONObject jsonObject = new JSONObject(text);
                 JSONObject data = jsonObject.getJSONObject("data");
-                JSONObject categories = data.getJSONObject("categories");
-                Iterator<?> it = categories.keys();
-                while (it.hasNext()) {
-                    newsCategories.add(it.next().toString());
-                    //Log.d("MainActivity", it.next().toString());
+//                JSONObject categories = data.getJSONObject("categories");
+//                Iterator<?> it = categories.keys();
+//                while (it.hasNext()) {
+//                    newsCategories.add(it.next().toString());
+//                }
+                JSONArray categories = data.getJSONArray("categories");
+                for (int i = 0; i < categories.length(); ++i) {
+                    newsCategories.add(categories.getString(i));
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

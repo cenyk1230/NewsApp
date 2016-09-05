@@ -26,12 +26,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerViewAdapter.TestRecyclerViewHolder> {
+public class TestRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     List<Object> contents;
 
-    static final int TYPE_HEADER = 0;
+    static final int TYPE_FOOTER = 0;
     static final int TYPE_CELL = 1;
+
+    private boolean mShowFooter = true;
 
     public TestRecyclerViewAdapter(List<Object> contents) {
         this.contents = contents;
@@ -43,44 +45,45 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
         notifyDataSetChanged();
     }
 
+    public void setShowFooter(boolean showFooter) {
+        this.mShowFooter = showFooter;
+    }
+
+    public boolean isShowFooter() {
+        return this.mShowFooter;
+    }
+
     @Override
     public int getItemViewType(int position) {
-        switch (position) {
-//            case 0:
-//                return TYPE_HEADER;
-            default:
-                return TYPE_CELL;
+        if (mShowFooter && position + 1 == getItemCount()) {
+            return TYPE_FOOTER;
+        } else {
+            return TYPE_CELL;
         }
     }
 
     @Override
     public int getItemCount() {
-        return contents.size();
+        int begin = mShowFooter ? 1 : 0;
+        return contents.size() + begin;
     }
 
     @Override
-    public TestRecyclerViewAdapter.TestRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = null;
-
-        switch (viewType) {
-            case TYPE_HEADER: {
-                view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.list_item_card_big, parent, false);
-                return new TestRecyclerViewAdapter.TestRecyclerViewHolder(view) {
-                };
-            }
-            case TYPE_CELL: {
-                view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.list_item_card_small, parent, false);
-                return new TestRecyclerViewAdapter.TestRecyclerViewHolder(view) {
-                };
-            }
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == TYPE_CELL) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_item_card_small, parent, false);
+            return new TestRecyclerViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.footer, null);
+            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            return new FooterViewHolder(view);
         }
-        return null;
     }
 
     @Override
-    public void onBindViewHolder(TestRecyclerViewAdapter.TestRecyclerViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         //Log.d("TestRecyclerViewAdapter", String.valueOf(position));
 //        switch (getItemViewType(position)) {
 //            case TYPE_HEADER:
@@ -88,15 +91,19 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
 //            case TYPE_CELL:
 //                break;
 //        }
+        if (getItemViewType(position) == TYPE_FOOTER) {
+            return;
+        }
+        TestRecyclerViewHolder testRecyclerViewHolder = (TestRecyclerViewHolder) holder;
         JSONObject news = (JSONObject)contents.get(position);
         JSONObject source = null;
         try {
-            holder.titleTextView.setText(news.getString("title"));
+            testRecyclerViewHolder.titleTextView.setText(news.getString("title"));
             source = news.getJSONObject("source");
-            holder.sourceTextView.setText(source.getString("name"));
+            testRecyclerViewHolder.sourceTextView.setText(source.getString("name"));
             JSONArray imgs = news.getJSONArray("imgs");
             JSONObject img = imgs.getJSONObject(0);
-            new NormalLoadPictrue().getPicture(img.getString("url"), holder.newsImageView);
+            new NormalLoadPictrue().getPicture(img.getString("url"), testRecyclerViewHolder.newsImageView);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -105,7 +112,7 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
                 final String newsURL = source.getString("url");
                 final long newsID = news.getLong("news_id");
                 final String newsString = news.toString();
-                holder.rootLinearLayout.setOnClickListener(new View.OnClickListener() {
+                testRecyclerViewHolder.rootLinearLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Log.d("TestRecyclerViewAdapter", "Clicked");
@@ -123,7 +130,12 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<TestRecyclerVi
                 e.printStackTrace();
             }
         }
+    }
 
+    public class FooterViewHolder extends RecyclerView.ViewHolder {
+        public FooterViewHolder(View view) {
+            super(view);
+        }
     }
 
     public class TestRecyclerViewHolder extends RecyclerView.ViewHolder {

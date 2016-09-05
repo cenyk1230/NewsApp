@@ -39,6 +39,7 @@ public class FavoriteActivity extends AppCompatActivity {
         mRecyclerView.addItemDecoration(new MaterialViewPagerHeaderDecorator());
 
         mAdapter = new TestRecyclerViewAdapter(mContentItems);
+        mAdapter.setShowFooter(false);
         mRecyclerView.setAdapter(mAdapter);
 
         mFavoriteNews = MainActivity.getFavoriteNews();
