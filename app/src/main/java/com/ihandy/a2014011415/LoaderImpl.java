@@ -140,7 +140,7 @@ public class LoaderImpl {
     /**
      * MD5 加密
      */
-    private static String getMD5Str(String str) {
+    public static String getMD5Str(String str) {
         MessageDigest messageDigest = null;
         try {
             messageDigest = MessageDigest.getInstance("MD5");

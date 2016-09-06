@@ -11,6 +11,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 
 public class WebViewActivity extends AppCompatActivity {
@@ -91,11 +95,54 @@ public class WebViewActivity extends AppCompatActivity {
             }
             //System.out.println(MainActivity.getFavoriteNews());
         } else if (id == R.id.action_share) {
-            // Handle share event
+            shareMsg();
         } else if (id == android.R.id.home) {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void shareMsg() {
+        Intent intent=new Intent(Intent.ACTION_SEND);
+        JSONObject news = null;
+        String picUrl = null;
+        String title = "This is a good news.";
+        JSONObject source = null;
+        String newsUrl = null;
+        try {
+            news = new JSONObject(newsString);
+            title = news.getString("title");
+            JSONArray imgs = news.getJSONArray("imgs");
+            JSONObject img = imgs.getJSONObject(0);
+            picUrl = img.getString("url");
+            source = news.getJSONObject("source");
+            if (source != null)
+                newsUrl = source.getString("url");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+//        if (picUrl == null) {
+//            intent.setType("text/plain");
+//        } else {
+//            String fileName = LoaderImpl.getMD5Str(picUrl);
+//            File picFile = new File(this.getCacheDir().getAbsolutePath() + "/" + fileName);
+//            if (picFile != null && picFile.exists() && picFile.isFile()) {
+//                intent.setType("image/*");
+//                Uri u = Uri.fromFile(picFile);
+//                intent.putExtra(Intent.EXTRA_STREAM, u);
+//            } else {
+//                intent.setType("text/plain");
+//            }
+//        }
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
+        String text = "Title: " + title + "\n";
+        if (newsUrl != null) {
+            text += "Url: " + newsUrl + "\n";
+        }
+        intent.putExtra(Intent.EXTRA_TEXT, text);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(Intent.createChooser(intent, "Share to"));
     }
 
     private void setCollection(String collection) {
