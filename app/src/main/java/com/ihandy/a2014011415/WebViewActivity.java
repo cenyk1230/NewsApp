@@ -81,9 +81,11 @@ public class WebViewActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.action_collection) {
             if (!mFavoriteNews.containsKey(newsID)) {
+                setCollection("1");
                 item.setIcon(R.drawable.favorite);
                 MainActivity.getFavoriteNews().put(newsID, newsString);
             } else {
+                setCollection("0");
                 item.setIcon(R.drawable.non_favorite);
                 MainActivity.getFavoriteNews().remove(newsID);
             }
@@ -94,5 +96,10 @@ public class WebViewActivity extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setCollection(String collection) {
+        SQLiteDao sqLiteDao = new SQLiteDao();
+        sqLiteDao.update(String.valueOf(newsID), collection);
     }
 }

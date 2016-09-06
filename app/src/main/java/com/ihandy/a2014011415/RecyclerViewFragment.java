@@ -29,6 +29,7 @@ public class RecyclerViewFragment extends Fragment {
     //private static final int ITEM_COUNT = 10;
     private long mNextId = -1;
     private String mCategory;
+    private Toast mToast;
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout mRefreshLayout;
     private LinearLayoutManager mLayoutManager;
@@ -45,6 +46,15 @@ public class RecyclerViewFragment extends Fragment {
 
     public String getCategory() {
         return mCategory;
+    }
+
+    private void showToast(String text) {
+        if (mToast != null) {
+            mToast.setText(text);
+        } else {
+            mToast = Toast.makeText(getContext(), text, Toast.LENGTH_SHORT);
+        }
+        mToast.show();
     }
 
     @Override
@@ -66,13 +76,15 @@ public class RecyclerViewFragment extends Fragment {
         mRecyclerView.addItemDecoration(new MaterialViewPagerHeaderDecorator());
 
         mAdapter = new TestRecyclerViewAdapter(mContentItems);
+        mAdapter.setShowFooter(false);
         mRecyclerView.setAdapter(mAdapter);
 
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Toast.makeText(getActivity().getApplicationContext(), "No Updated News", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getActivity().getApplicationContext(), "No Updated News", Toast.LENGTH_SHORT).show();
+                showToast("No updated news");
                 mRefreshLayout.setRefreshing(false);
             }
         });
@@ -83,20 +95,27 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
+                //System.out.println("" + lastVisibleItem + "  " + mAdapter.getItemCount());
                 if (newState == RecyclerView.SCROLL_STATE_IDLE
-                        && lastVisibleItem + 1 == mAdapter.getItemCount()
-                        && mAdapter.isShowFooter())
+                        && lastVisibleItem + 1 == mAdapter.getItemCount())
                 {
-                    System.out.println("onScrollStateChanged");
+                    //System.out.println("onScrollStateChanged");
                     //Toast.makeText(getActivity().getApplicationContext(), "Loading...", Toast.LENGTH_SHORT).show();
                     if (mNextId == -1) {
-                        Toast.makeText(getActivity().getApplicationContext(), "No Older News", Toast.LENGTH_SHORT).show();
+                        //mAdapter.setShowFooter(false);
+                        showToast("No older news");
+                        //Toast.makeText(getActivity().getApplicationContext(), "No Older News", Toast.LENGTH_SHORT).show();
                     } else {
                         List<Object> tmpContentItems = new ArrayList<>();
                         tmpContentItems.addAll(mContentItems);
                         JSONArray tmpNewsList = getNewsList(mNextId);
-                        System.out.println(tmpNewsList);
-                        if (tmpNewsList != null) {
+                        //System.out.println(tmpNewsList);
+                        if (tmpNewsList == null || tmpNewsList.length() == 0) {
+                            showToast("No older news");
+                            //Toast.makeText(getActivity().getApplicationContext(), "No Older News", Toast.LENGTH_SHORT).show();
+                        } else {
+                            showToast("Older news has loaded");
+                            //Toast.makeText(getActivity().getApplicationContext(), "Older News Has Loaded", Toast.LENGTH_SHORT).show();
                             for (int i = 0; i < tmpNewsList.length(); ++i) {
                                 try {
                                     tmpContentItems.add(tmpNewsList.getJSONObject(i));
@@ -107,7 +126,6 @@ public class RecyclerViewFragment extends Fragment {
                             mContentItems = tmpContentItems;
                             saveNewsList();
                             mAdapter.updateList(mContentItems);
-                            mAdapter.notifyDataSetChanged();
                         }
                     }
                 }

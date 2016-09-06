@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity
@@ -230,6 +231,16 @@ public class MainActivity extends AppCompatActivity
         return newsCategories.size() > 0;
     }
 
+    private void loadFavoriteNews() {
+        SQLiteDao sqLiteDao = new SQLiteDao();
+        List<SQLiteDao.News> newsList = sqLiteDao.findAllInCollection();
+        //System.out.println(newsList.size());
+        //System.out.println(newsList);
+        for (int i = 0; i < newsList.size(); ++i) {
+            favoriteNews.put(Long.valueOf(newsList.get(i).newsId), newsList.get(i).jsonData);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -284,6 +295,8 @@ public class MainActivity extends AppCompatActivity
             }
             saveCategories();
         }
+
+        loadFavoriteNews();
 
         ArrayList<RecyclerViewFragment> list = new ArrayList<>();
         for (int i = 0; i < watchedStringList.size(); ++i) {

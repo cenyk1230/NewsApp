@@ -37,7 +37,7 @@ public class SQLiteDao {
 
     public void update(String newsId, String collection){
         db = SQLiteDatabase.openOrCreateDatabase(name, null);
-        db.execSQL("update news set collection=? where newsId=? ", new String[]{collection, newsId});
+        db.execSQL("update news set collection=? where newsId=?", new String[]{collection, newsId});
         db.close();
     }
 
@@ -47,16 +47,34 @@ public class SQLiteDao {
         db.close();
     }
 
+    public List<News> findAllInCollection() {
+        db = SQLiteDatabase.openOrCreateDatabase(name, null);
+        List<News> newsList = new ArrayList<>();
+        Cursor cursor = db.rawQuery("select * from news where collection=?", new String[]{"1"});
+        while(cursor.moveToNext()){
+            int id = cursor.getInt(cursor.getColumnIndex("id"));
+            String newsId = cursor.getString(cursor.getColumnIndex("newsId"));
+            String category = cursor.getString(cursor.getColumnIndex("category"));
+            String collection = cursor.getString(cursor.getColumnIndex("collection"));
+            String jsonData = cursor.getString(cursor.getColumnIndex("jsonData"));
+            News news = new News(id, newsId, category, collection, jsonData);
+            newsList.add(news);
+        }
+        cursor.close();
+        db.close();
+        return newsList;
+    }
+
     public List<News> findAllInCategory(String category){
         db = SQLiteDatabase.openOrCreateDatabase(name, null);
         List<News> newsList = new ArrayList<>();
         Cursor cursor = db.rawQuery("select * from news where category=?", new String[]{category});
         while(cursor.moveToNext()){
             int id = cursor.getInt(cursor.getColumnIndex("id"));
-            String newId = cursor.getString(cursor.getColumnIndex("newsId"));
+            String newsId = cursor.getString(cursor.getColumnIndex("newsId"));
             String collection = cursor.getString(cursor.getColumnIndex("collection"));
             String jsonData = cursor.getString(cursor.getColumnIndex("jsonData"));
-            News news = new News(id, newId, category, collection, jsonData);
+            News news = new News(id, newsId, category, collection, jsonData);
             newsList.add(news);
         }
         cursor.close();
