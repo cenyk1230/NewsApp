@@ -118,7 +118,7 @@ public class TestRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.V
         try {
             source = news.getJSONObject("source");
         } catch (JSONException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         if (source != null) {
             try {

@@ -82,7 +82,7 @@ public class LoaderImpl {
             conn.disconnect();
             return bitmap;
         }catch(IOException e){
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
         }
     }
@@ -130,7 +130,7 @@ public class LoaderImpl {
             FileInputStream fis = new FileInputStream(filePath);
             bitmap = BitmapFactory.decodeStream(fis);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             bitmap = null;
         }
         return bitmap;
