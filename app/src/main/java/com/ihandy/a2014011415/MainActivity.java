@@ -12,8 +12,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
 
 import com.github.florent37.materialviewpager.MaterialViewPager;
 import com.github.florent37.materialviewpager.header.HeaderDesign;
@@ -293,10 +291,20 @@ public class MainActivity extends AppCompatActivity
             for (int i = 0; i < newsCategories.size(); ++i) {
                 watchedStringList.add(newsCategories.get(i));
             }
-            saveCategories();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    saveCategories();
+                }
+            }).start();
         }
 
-        loadFavoriteNews();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                loadFavoriteNews();
+            }
+        }).start();
 
         ArrayList<RecyclerViewFragment> list = new ArrayList<>();
         for (int i = 0; i < watchedStringList.size(); ++i) {
@@ -340,16 +348,16 @@ public class MainActivity extends AppCompatActivity
         mViewPager.getViewPager().setOffscreenPageLimit(mViewPager.getViewPager().getAdapter().getCount());
         mViewPager.getPagerTitleStrip().setViewPager(mViewPager.getViewPager());
 
-        View logo = findViewById(R.id.logo_white);
-        if (logo != null) {
-            logo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mViewPager.notifyHeaderChanged();
-                    Toast.makeText(getApplicationContext(), "Yes, the title is clickable", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+//        View logo = findViewById(R.id.logo_white);
+//        if (logo != null) {
+//            logo.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    mViewPager.notifyHeaderChanged();
+//                    Toast.makeText(getApplicationContext(), "Yes, the title is clickable", Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
     }
 
     @Override
