@@ -21,7 +21,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class RecyclerViewFragment extends Fragment {
@@ -57,6 +59,16 @@ public class RecyclerViewFragment extends Fragment {
         mToast.show();
     }
 
+    private Long getNewsIdFromJson(JSONObject news) {
+        long newsId = 0;
+        try {
+            newsId = news.getLong("news_id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return newsId;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_recyclerview, container, false);
@@ -84,7 +96,41 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void onRefresh() {
                 //Toast.makeText(getActivity().getApplicationContext(), "No Updated News", Toast.LENGTH_SHORT).show();
-                showToast("No updated news");
+                List<Object> tmpContentItems = new ArrayList<>();
+                JSONArray tmpNewsList = getNewsList();
+                if (tmpNewsList == null || tmpNewsList.length() == 0) {
+                    showToast("No updated news");
+                } else {
+                    boolean flag = false;
+                    Set<Long> set = new HashSet<>();
+                    for (int i = 0; i < mContentItems.size(); ++i) {
+                        set.add(getNewsIdFromJson((JSONObject)(mContentItems.get(i))));
+                    }
+                    for (int i = 0; i < tmpNewsList.length(); ++i) {
+                        try {
+                            JSONObject obj = tmpNewsList.getJSONObject((i));
+                            Long newsId = getNewsIdFromJson(obj);
+                            if (!set.contains(newsId)) {
+                                flag = true;
+                                tmpContentItems.add(obj);
+                            }
+                        } catch (JSONException e) {
+                            System.out.println(e);
+                            //e.printStackTrace();
+                        }
+                    }
+                    if (flag) {
+                        showToast("Updated news has loaded");
+                        for (int i = 0; i < mContentItems.size(); ++i) {
+                            tmpContentItems.add(mContentItems.get(i));
+                        }
+                        mContentItems = tmpContentItems;
+                        saveNewsList();
+                        mAdapter.updateList(mContentItems);
+                    } else {
+                        showToast("No updated news");
+                    }
+                }
                 mRefreshLayout.setRefreshing(false);
             }
         });
