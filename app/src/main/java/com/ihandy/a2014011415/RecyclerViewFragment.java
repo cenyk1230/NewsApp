@@ -250,7 +250,7 @@ public class RecyclerViewFragment extends Fragment {
                 }
                 in.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             try {
                 JSONObject jsonObject = new JSONObject(text);
@@ -262,7 +262,7 @@ public class RecyclerViewFragment extends Fragment {
                 }
                 newsList = data.getJSONArray("news");
             } catch (JSONException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }

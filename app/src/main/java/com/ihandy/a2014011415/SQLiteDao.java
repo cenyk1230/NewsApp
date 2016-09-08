@@ -14,7 +14,7 @@ public class SQLiteDao {
     public SQLiteDao() {
         name = MainActivity.getContext().getExternalFilesDir("") + "/news.db";
         db = SQLiteDatabase.openOrCreateDatabase(name, null);
-        db.execSQL("create table if not exists news (id Integer primary key autoincrement, newsId varchar(20), category varchar(20), collection varchar(5), jsonData varchar(2000))");
+        db.execSQL("create table if not exists news (newsId varchar(20), category varchar(20), collection varchar(5), jsonData varchar(2000))");
         db.close();
     }
 
@@ -52,12 +52,11 @@ public class SQLiteDao {
         List<News> newsList = new ArrayList<>();
         Cursor cursor = db.rawQuery("select * from news where collection=?", new String[]{"1"});
         while(cursor.moveToNext()){
-            int id = cursor.getInt(cursor.getColumnIndex("id"));
             String newsId = cursor.getString(cursor.getColumnIndex("newsId"));
             String category = cursor.getString(cursor.getColumnIndex("category"));
             String collection = cursor.getString(cursor.getColumnIndex("collection"));
             String jsonData = cursor.getString(cursor.getColumnIndex("jsonData"));
-            News news = new News(id, newsId, category, collection, jsonData);
+            News news = new News(newsId, category, collection, jsonData);
             newsList.add(news);
         }
         cursor.close();
@@ -70,11 +69,10 @@ public class SQLiteDao {
         List<News> newsList = new ArrayList<>();
         Cursor cursor = db.rawQuery("select * from news where category=?", new String[]{category});
         while(cursor.moveToNext()){
-            int id = cursor.getInt(cursor.getColumnIndex("id"));
             String newsId = cursor.getString(cursor.getColumnIndex("newsId"));
             String collection = cursor.getString(cursor.getColumnIndex("collection"));
             String jsonData = cursor.getString(cursor.getColumnIndex("jsonData"));
-            News news = new News(id, newsId, category, collection, jsonData);
+            News news = new News(newsId, category, collection, jsonData);
             newsList.add(news);
         }
         cursor.close();
@@ -83,7 +81,6 @@ public class SQLiteDao {
     }
 
     public class News {
-        public int id;
         public String newsId;
         public String category;
         public String collection;
@@ -92,8 +89,7 @@ public class SQLiteDao {
         public News() {
         }
 
-        public News(int id, String newsId, String category, String collection, String jsonData) {
-            this.id = id;
+        public News(String newsId, String category, String collection, String jsonData) {
             this.newsId = newsId;
             this.category = category;
             this.collection = collection;
