@@ -101,20 +101,10 @@ public class MainActivity extends AppCompatActivity
             for (int i = 0; i < newsCategories.size(); ++i) {
                 watchedStringList.add(newsCategories.get(i));
             }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    saveCategories();
-                }
-            }).start();
+            saveCategories();
         }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                loadFavoriteNews();
-            }
-        }).start();
+        loadFavoriteNews();
 
         ArrayList<RecyclerViewFragment> list = new ArrayList<>();
         for (int i = 0; i < watchedStringList.size(); ++i) {
