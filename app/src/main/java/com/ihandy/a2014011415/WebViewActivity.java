@@ -48,7 +48,6 @@ public class WebViewActivity extends AppCompatActivity {
 
         newsWebView = (WebView)findViewById(R.id.newsWebView);
 
-        //System.out.println(url);
         newsWebView.setWebViewClient(new WebViewClient() {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
@@ -95,7 +94,6 @@ public class WebViewActivity extends AppCompatActivity {
                 item.setIcon(R.drawable.non_favorite);
                 MainActivity.getFavoriteNews().remove(newsID);
             }
-            //System.out.println(MainActivity.getFavoriteNews());
         } else if (id == R.id.action_share) {
             shareMsg();
         } else if (id == android.R.id.home) {
@@ -128,12 +126,9 @@ public class WebViewActivity extends AppCompatActivity {
         } else {
             String fileName = LoaderImpl.getMD5Str(picUrl);
             File picFile = new File(getApplicationContext().getExternalFilesDir("").getAbsolutePath() + "/pictures/" + fileName + ".png");
-            //System.out.println(getApplicationContext().getExternalFilesDir("").getAbsolutePath() + "/pictures/" + fileName + ".png" + " isExist: " + picFile.exists() + " isFile: " + picFile.isFile());
             if (picFile != null && picFile.exists() && picFile.isFile()) {
                 intent.setType("image/png");
                 Uri u = Uri.fromFile(picFile);
-                //System.out.println(picFile);
-                //System.out.println(u);
                 intent.putExtra(Intent.EXTRA_STREAM, u);
             } else {
                 intent.setType("text/plain");

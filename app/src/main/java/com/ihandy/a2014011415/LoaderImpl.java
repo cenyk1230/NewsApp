@@ -73,7 +73,6 @@ public class LoaderImpl {
                     //2.缓存bitmap至/data/data/packageName/cache/文件夹中
                     String fileName = getMD5Str(url);
                     String filePath = this.cachedDir + "/" +fileName + ".png";
-                    //System.out.println(url + "  " + filePath);
                     FileOutputStream fos = new FileOutputStream(filePath);
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
                 }
@@ -167,13 +166,4 @@ public class LoaderImpl {
         return md5StrBuff.toString();
     }
 
-    /**
-     * MD5 加密
-     private static String getMD5Str(Object...objects){
-     StringBuilder stringBuilder=new StringBuilder();
-     for (Object object : objects) {
-     stringBuilder.append(object.toString());
-     }
-     return getMD5Str(stringBuilder.toString());
-     }*/
 }

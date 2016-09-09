@@ -35,14 +35,6 @@ public class CategoryManagementActivity extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setEnabled(false);
 
-//        watchedStringList = new ArrayList<>();
-//        unwatchedStringList = new ArrayList<>();
-//        for (int i = 0; i < MainActivity.getWatchedStringList().size(); ++i) {
-//            watchedStringList.add(MainActivity.getWatchedStringList().get(i));
-//        }
-//        for (int i = 0; i < MainActivity.getUnwatchedStringList().size(); ++i) {
-//            unwatchedStringList.add(MainActivity.getUnwatchedStringList().get(i));
-//        }
         watchedStringList = MainActivity.getWatchedStringList();
         unwatchedStringList = MainActivity.getUnwatchedStringList();
 
@@ -54,7 +46,6 @@ public class CategoryManagementActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //System.out.println("onBackPressed");
         setResult(RESULT_OK);
         finish();
         super.onBackPressed();
@@ -86,7 +77,6 @@ public class CategoryManagementActivity extends AppCompatActivity {
             list.add(map);
         }
 
-        //System.out.println(list);
         return list;
     }
 
@@ -160,7 +150,6 @@ public class CategoryManagementActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
             int size = watchedStringList.size();
-            //Log.v("MyListView-click", "line: " + mPosition + " size: " + size);
             if (mPosition <= size) {
                 unwatchedStringList.add(watchedStringList.get(mPosition - 1));
                 watchedStringList.remove(mPosition - 1);

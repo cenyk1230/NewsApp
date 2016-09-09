@@ -3,7 +3,6 @@ package com.ihandy.a2014011415;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -53,49 +52,183 @@ public class MainActivity extends AppCompatActivity
     private static ArrayList<String> watchedStringList = new ArrayList<>();
     private static ArrayList<String> unwatchedStringList = new ArrayList<>();
 
-    private Thread mThread;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-    Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            long timeStamp = System.currentTimeMillis();
-            URL url = null;
-            BufferedReader in = null;
-            String text = "", inputLine;
-            try {
-                url = new URL("http://assignment.crazz.cn/news/en/category?timestamp=" + timeStamp);
-                //Log.d("MainActivity", Long.toString(timeStamp));
-                in = new BufferedReader(new InputStreamReader(url.openStream()));
-                while ((inputLine = in.readLine()) != null) {
-                    text = text + inputLine + "\n";
-                }
-                in.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //System.out.println(text);
-            try {
-                JSONObject jsonObject = new JSONObject(text);
-                JSONObject data = jsonObject.getJSONObject("data");
-                JSONObject categories = data.getJSONObject("categories");
-                Iterator<?> it = categories.keys();
-                while (it.hasNext()) {
-                    String key = it.next().toString();
-                    newsCategories.add(key);
-                    categoryMap.put(key, categories.getString(key));
-                }
-//                JSONArray categories = data.getJSONArray("categories");
-//                for (int i = 0; i < categories.length(); ++i) {
-//                    newsCategories.add(categories.getString(i));
-//                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-//            for (int i = 0; i < newsCategories.size(); ++i) {
-//                Log.d("MainActivity", newsCategories.get(i));
-//            }
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, 0, 0);
+        mDrawer.setDrawerListener(mDrawerToggle);
+
+        final ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setDisplayUseLogoEnabled(false);
+            actionBar.setHomeButtonEnabled(true);
         }
-    };
+
+        setTitle("");
+
+        mViewPager = (MaterialViewPager) findViewById(R.id.materialViewPager);
+
+        toolbar = mViewPager.getToolbar();
+
+        context = this;
+
+        imageLoader = new AsyncImageLoader(getApplicationContext());
+        imageLoader.setCache2File(true);
+        String cachedDir = context.getExternalFilesDir("").getAbsolutePath() + "/pictures";
+        if (!new File(cachedDir).exists()) {
+            new File(cachedDir).mkdirs();
+        }
+        imageLoader.setCachedDir(cachedDir);
+
+        mNaviView = (NavigationView) findViewById(R.id.nav_view);
+        mNaviView.setItemIconTintList(null);
+        mNaviView.setNavigationItemSelectedListener(this);
+
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        }
+
+        if (!loadCategoriesFromFile()) {
+            loadCategoriesFromWeb();
+            watchedStringList.clear();
+            unwatchedStringList.clear();
+            for (int i = 0; i < newsCategories.size(); ++i) {
+                watchedStringList.add(newsCategories.get(i));
+            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    saveCategories();
+                }
+            }).start();
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                loadFavoriteNews();
+            }
+        }).start();
+
+        ArrayList<RecyclerViewFragment> list = new ArrayList<>();
+        for (int i = 0; i < watchedStringList.size(); ++i) {
+            RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
+            fragment.setCategory(watchedStringList.get(i));
+            list.add(fragment);
+        }
+
+        mViewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), context, list);
+        mViewPager.getViewPager().setAdapter(mViewPagerAdapter);
+
+        mViewPager.setMaterialViewPagerListener(new MaterialViewPager.Listener() {
+            @Override
+            public HeaderDesign getHeaderDesign(int page) {
+                switch (page) {
+                    case 0:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.cyan,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIdDnTAAeeucd7V_kAALHrgEghoQAB57R951.jpg");
+                    case 1:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.blue,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIBse3AAYCe8hdaXMAALHrgGo8cUABgKT703.jpg");
+                    case 2:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.purple,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxtqIXy1OAAi9LK5qQwgAALHrQK3PAoACL1E420.jpg");
+                    case 3:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.red,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxr-IcOo6AAP2TZRDqxIAALHpwCb7wwAA_Zl187.jpg");
+                    case 4:
+                        return HeaderDesign.fromColorAndUrl(
+                                Color.parseColor("#FF8C00"),
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxv6IZ2B4AAnNuJxJwggAALHtgCDixUACc3Q752.jpg");
+                    case 5:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.lime,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxuaIFf-LAAfmjVhkIBUAALHsAJ77rgAB-al019.jpg");
+                    case 6:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.green,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKx1KIfcrjABed5wqRc1YAALHyACZPYYAF53_331.jpg");
+                }
+                return null;
+            }
+        });
+
+        mViewPager.getViewPager().setOffscreenPageLimit(mViewPager.getViewPager().getAdapter().getCount());
+        mViewPager.getPagerTitleStrip().setViewPager(mViewPager.getViewPager());
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDrawer.isDrawerOpen(GravityCompat.START)) {
+            mDrawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+        //System.out.println(id);
+        if (id == R.id.nav_favorites) {
+            Intent intent = new Intent(this, FavoriteActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.nav_category_management) {
+            Intent intent = new Intent(this, CategoryManagementActivity.class);
+            startActivityForResult(intent, 0);
+        } else if (id == R.id.nav_about_me) {
+            Intent intent = new Intent(this, AboutActivity.class);
+            startActivity(intent);
+        }
+
+        mDrawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return mDrawerToggle.onOptionsItemSelected(item) ||
+                super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        ArrayList<RecyclerViewFragment> list = new ArrayList<>();
+        for (int i = 0; i < newsCategories.size(); ++i) {
+            Boolean watched = true;
+            for (int j = 0; j < unwatchedStringList.size(); ++j) {
+                if (newsCategories.get(i).equals(unwatchedStringList.get(j))) {
+                    watched = false;
+                    break;
+                }
+            }
+            if (!watched) {
+                continue;
+            }
+            RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
+            fragment.setCategory(newsCategories.get(i));
+            list.add(fragment);
+        }
+        mViewPagerAdapter.updateList(list);
+    }
 
     public static HashMap<Long, String> getFavoriteNews() {
         return favoriteNews;
@@ -123,11 +256,6 @@ public class MainActivity extends AppCompatActivity
 
     public static Context getContext() {
         return context;
-    }
-
-    public static boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return connectivityManager != null && connectivityManager.getActiveNetworkInfo().isAvailable();
     }
 
     public static void saveCategories() {
@@ -185,6 +313,47 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void loadCategoriesFromWeb() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long timeStamp = System.currentTimeMillis();
+                URL url = null;
+                BufferedReader in = null;
+                String text = "", inputLine;
+                try {
+                    url = new URL("http://assignment.crazz.cn/news/en/category?timestamp=" + timeStamp);
+                    in = new BufferedReader(new InputStreamReader(url.openStream()));
+                    while ((inputLine = in.readLine()) != null) {
+                        text = text + inputLine + "\n";
+                    }
+                    in.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    JSONObject jsonObject = new JSONObject(text);
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    JSONObject categories = data.getJSONObject("categories");
+                    Iterator<?> it = categories.keys();
+                    while (it.hasNext()) {
+                        String key = it.next().toString();
+                        newsCategories.add(key);
+                        categoryMap.put(key, categories.getString(key));
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     private boolean loadCategoriesFromFile() {
         File file = new File(context.getExternalFilesDir(""), "Category.txt");
         if (!file.exists())
@@ -233,209 +402,9 @@ public class MainActivity extends AppCompatActivity
     private void loadFavoriteNews() {
         SQLiteDao sqLiteDao = new SQLiteDao();
         List<SQLiteDao.News> newsList = sqLiteDao.findAllInCollection();
-        //System.out.println(newsList.size());
         //System.out.println(newsList);
         for (int i = 0; i < newsList.size(); ++i) {
             favoriteNews.put(Long.valueOf(newsList.get(i).newsId), newsList.get(i).jsonData);
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer, 0, 0);
-        mDrawer.setDrawerListener(mDrawerToggle);
-
-        final ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setDisplayUseLogoEnabled(false);
-            actionBar.setHomeButtonEnabled(true);
-        }
-
-        setTitle("");
-
-        mViewPager = (MaterialViewPager) findViewById(R.id.materialViewPager);
-
-        toolbar = mViewPager.getToolbar();
-
-        context = this;
-
-        imageLoader = new AsyncImageLoader(getApplicationContext());
-        imageLoader.setCache2File(true);
-        String cachedDir = context.getExternalFilesDir("").getAbsolutePath() + "/pictures";
-        if (!new File(cachedDir).exists()) {
-            new File(cachedDir).mkdirs();
-        }
-        imageLoader.setCachedDir(cachedDir);
-
-        mNaviView = (NavigationView) findViewById(R.id.nav_view);
-        mNaviView.setItemIconTintList(null);
-        mNaviView.setNavigationItemSelectedListener(this);
-
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        }
-        //System.out.println(isNetworkAvailable());
-
-        if (!loadCategoriesFromFile()) {
-            mThread = new Thread(runnable);
-            mThread.start();
-            try {
-                mThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            watchedStringList.clear();
-            unwatchedStringList.clear();
-            for (int i = 0; i < newsCategories.size(); ++i) {
-                watchedStringList.add(newsCategories.get(i));
-            }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    saveCategories();
-                }
-            }).start();
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                loadFavoriteNews();
-            }
-        }).start();
-
-        ArrayList<RecyclerViewFragment> list = new ArrayList<>();
-        for (int i = 0; i < watchedStringList.size(); ++i) {
-            RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
-            fragment.setCategory(watchedStringList.get(i));
-            list.add(fragment);
-        }
-
-        mViewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), context, list);
-        mViewPager.getViewPager().setAdapter(mViewPagerAdapter);
-
-        mViewPager.setMaterialViewPagerListener(new MaterialViewPager.Listener() {
-            @Override
-            public HeaderDesign getHeaderDesign(int page) {
-                //System.out.println(page);
-                switch (page) {
-                    case 0:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.cyan,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIdDnTAAeeucd7V_kAALHrgEghoQAB57R951.jpg");
-                    case 1:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.blue,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIBse3AAYCe8hdaXMAALHrgGo8cUABgKT703.jpg");
-                    case 2:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.purple,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxtqIXy1OAAi9LK5qQwgAALHrQK3PAoACL1E420.jpg");
-                    case 3:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.red,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxr-IcOo6AAP2TZRDqxIAALHpwCb7wwAA_Zl187.jpg");
-                    case 4:
-                        return HeaderDesign.fromColorAndUrl(
-                                Color.parseColor("#FF8C00"),
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxv6IZ2B4AAnNuJxJwggAALHtgCDixUACc3Q752.jpg");
-                    case 5:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.lime,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxuaIFf-LAAfmjVhkIBUAALHsAJ77rgAB-al019.jpg");
-                    case 6:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.green,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKx1KIfcrjABed5wqRc1YAALHyACZPYYAF53_331.jpg");
-                }
-                return null;
-            }
-        });
-
-        mViewPager.getViewPager().setOffscreenPageLimit(mViewPager.getViewPager().getAdapter().getCount());
-        mViewPager.getPagerTitleStrip().setViewPager(mViewPager.getViewPager());
-
-//        View logo = findViewById(R.id.logo_white);
-//        if (logo != null) {
-//            logo.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    mViewPager.notifyHeaderChanged();
-//                    Toast.makeText(getApplicationContext(), "Yes, the title is clickable", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mDrawer.isDrawerOpen(GravityCompat.START)) {
-            mDrawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-        //System.out.println(id);
-        if (id == R.id.nav_favorites) {
-            Intent intent = new Intent(this, FavoriteActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_category_management) {
-            Intent intent = new Intent(this, CategoryManagementActivity.class);
-            startActivityForResult(intent, 0);
-        } else if (id == R.id.nav_about_me) {
-            Intent intent = new Intent(this, AboutActivity.class);
-            startActivity(intent);
-        }
-
-        mDrawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return mDrawerToggle.onOptionsItemSelected(item) ||
-                super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //System.out.println(unwatchedStringList.size());
-        //System.out.println(resultCode + " : " + RESULT_OK);
-        ArrayList<RecyclerViewFragment> list = new ArrayList<>();
-        for (int i = 0; i < newsCategories.size(); ++i) {
-            Boolean watched = true;
-            for (int j = 0; j < unwatchedStringList.size(); ++j) {
-                if (newsCategories.get(i).equals(unwatchedStringList.get(j))) {
-                    watched = false;
-                    break;
-                }
-            }
-            if (!watched) {
-                continue;
-            }
-            RecyclerViewFragment fragment = RecyclerViewFragment.newInstance();
-            fragment.setCategory(newsCategories.get(i));
-            list.add(fragment);
-        }
-        mViewPagerAdapter.updateList(list);
     }
 }
