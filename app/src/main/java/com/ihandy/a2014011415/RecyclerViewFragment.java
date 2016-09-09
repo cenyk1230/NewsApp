@@ -1,5 +1,6 @@
 package com.ihandy.a2014011415;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -30,6 +31,7 @@ public class RecyclerViewFragment extends Fragment {
 
     //private static final int ITEM_COUNT = 10;
     private long mNextId = -1;
+    private boolean mLoading = false;
     private String mCategory;
     private Toast mToast;
     private RecyclerView mRecyclerView;
@@ -84,7 +86,6 @@ public class RecyclerViewFragment extends Fragment {
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setHasFixedSize(true);
 
-        //Use this now
         mRecyclerView.addItemDecoration(new MaterialViewPagerHeaderDecorator());
 
         mAdapter = new TestRecyclerViewAdapter(mContentItems);
@@ -92,48 +93,16 @@ public class RecyclerViewFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
 
         mRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                //Toast.makeText(getActivity().getApplicationContext(), "No Updated News", Toast.LENGTH_SHORT).show();
-                List<Object> tmpContentItems = new ArrayList<>();
-                JSONArray tmpNewsList = getNewsList();
-                if (tmpNewsList == null || tmpNewsList.length() == 0) {
-                    showToast("No updated news");
-                } else {
-                    boolean flag = false;
-                    Set<Long> set = new HashSet<>();
-                    for (int i = 0; i < mContentItems.size(); ++i) {
-                        set.add(getNewsIdFromJson((JSONObject)(mContentItems.get(i))));
-                    }
-                    for (int i = 0; i < tmpNewsList.length(); ++i) {
-                        try {
-                            JSONObject obj = tmpNewsList.getJSONObject((i));
-                            Long newsId = getNewsIdFromJson(obj);
-                            if (!set.contains(newsId)) {
-                                flag = true;
-                                tmpContentItems.add(obj);
-                            }
-                        } catch (JSONException e) {
-                            System.out.println(e);
-                            //e.printStackTrace();
-                        }
-                    }
-                    if (flag) {
-                        showToast("Updated news has loaded");
-                        for (int i = 0; i < mContentItems.size(); ++i) {
-                            tmpContentItems.add(mContentItems.get(i));
-                        }
-                        mContentItems = tmpContentItems;
-                        saveNewsList();
-                        mAdapter.updateList(mContentItems);
-                    } else {
-                        showToast("No updated news");
-                    }
+                if (!mLoading) {
+                    mLoading = true;
+                    new UpdateAsyncTask().execute();
                 }
-                mRefreshLayout.setRefreshing(false);
             }
-        });
+        };
+        mRefreshLayout.setOnRefreshListener(onRefreshListener);
 
 
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -141,38 +110,12 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                //System.out.println("" + lastVisibleItem + "  " + mAdapter.getItemCount());
                 if (newState == RecyclerView.SCROLL_STATE_IDLE
                         && lastVisibleItem + 1 == mAdapter.getItemCount())
                 {
-                    //System.out.println("onScrollStateChanged");
-                    //Toast.makeText(getActivity().getApplicationContext(), "Loading...", Toast.LENGTH_SHORT).show();
-                    if (mNextId == -1) {
-                        //mAdapter.setShowFooter(false);
-                        showToast("No older news");
-                        //Toast.makeText(getActivity().getApplicationContext(), "No Older News", Toast.LENGTH_SHORT).show();
-                    } else {
-                        List<Object> tmpContentItems = new ArrayList<>();
-                        tmpContentItems.addAll(mContentItems);
-                        JSONArray tmpNewsList = getNewsList(mNextId);
-                        //System.out.println(tmpNewsList);
-                        if (tmpNewsList == null || tmpNewsList.length() == 0) {
-                            showToast("No older news");
-                            //Toast.makeText(getActivity().getApplicationContext(), "No Older News", Toast.LENGTH_SHORT).show();
-                        } else {
-                            showToast("Older news has loaded");
-                            //Toast.makeText(getActivity().getApplicationContext(), "Older News Has Loaded", Toast.LENGTH_SHORT).show();
-                            for (int i = 0; i < tmpNewsList.length(); ++i) {
-                                try {
-                                    tmpContentItems.add(tmpNewsList.getJSONObject(i));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            mContentItems = tmpContentItems;
-                            saveNewsList();
-                            mAdapter.updateList(mContentItems);
-                        }
+                    if (!mLoading) {
+                        mLoading = true;
+                        new GetOlderAsyncTask().execute();
                     }
                 }
             }
@@ -180,45 +123,49 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                lastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
+                lastVisibleItem = mLayoutManager.findLastCompletelyVisibleItemPosition();
             }
         });
 
-
-        JSONArray newsList = getNewsList();
-
-        if (newsList == null || newsList.length() == 0) {
-            newsList = loadNewsListFromDB();
+        if (!mLoading) {
+            mLoading = true;
+            new InitAsyncTask().execute();
         }
 
-        if (newsList != null) {
-            for (int i = 0; i < newsList.length(); ++i) {
-                try {
-                    mContentItems.add(newsList.getJSONObject(i));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-            saveNewsList();
-            mAdapter.notifyDataSetChanged();
-        }
+//        JSONArray newsList = getNewsList();
+//
+//        if (newsList == null || newsList.length() == 0) {
+//            newsList = loadNewsListFromDB();
+//        }
+//
+//        if (newsList != null) {
+//            for (int i = 0; i < newsList.length(); ++i) {
+//                try {
+//                    mContentItems.add(newsList.getJSONObject(i));
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            saveNewsList();
+//            mAdapter.notifyDataSetChanged();
+//        }
     }
 
-    public JSONArray getNewsList() {
-        ContentThread mContentThread = new ContentThread();
-        mContentThread.setCategory(mCategory);
-        mContentThread.start();
-        mContentThread.join();
-        return mContentThread.getNewsList();
-    }
-
-    public JSONArray getNewsList(long next_id) {
-        ContentThread mContentThread = new ContentThread(next_id);
-        mContentThread.setCategory(mCategory);
-        mContentThread.start();
-        mContentThread.join();
-        return mContentThread.getNewsList();
-    }
+//    public JSONArray getNewsList() {
+//        ContentThread mContentThread = new ContentThread();
+//        mContentThread.setCategory(mCategory);
+//        mContentThread.start();
+//        mContentThread.join();
+//        return mContentThread.getNewsList();
+//    }
+//
+//    public JSONArray getNewsList(long next_id) {
+//        ContentThread mContentThread = new ContentThread(next_id);
+//        mContentThread.setCategory(mCategory);
+//        mContentThread.start();
+//        mContentThread.join();
+//        return mContentThread.getNewsList();
+//    }
 
     public void saveNewsList() {
         SQLiteDao sqLiteDao = new SQLiteDao();
@@ -312,4 +259,176 @@ public class RecyclerViewFragment extends Fragment {
             }
         }
     }
+
+    private JSONArray getNewsList(int flag) {
+        JSONArray newsList = null;
+        URL url = null;
+        BufferedReader in = null;
+        String text = "", inputLine;
+        try {
+            if (flag == 2 && mNextId != -1)
+                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + mCategory + "&max_news_id=" + String.valueOf(mNextId));
+            else
+                url = new URL("http://assignment.crazz.cn/news/query?locale=en&category=" + mCategory);
+            in = new BufferedReader(new InputStreamReader(url.openStream()));
+            while ((inputLine = in.readLine()) != null) {
+                text = text + inputLine + "\n";
+            }
+            in.close();
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
+        try {
+            JSONObject jsonObject = new JSONObject(text);
+            JSONObject data = jsonObject.getJSONObject("data");
+            long tmpNextId = -1;
+            if (data.has("next_id")) {
+                tmpNextId = data.getLong("next_id");
+            }
+            if (tmpNextId != -1 && (mNextId == -1 || tmpNextId < mNextId)) {
+                mNextId = tmpNextId;
+            }
+            newsList = data.getJSONArray("news");
+        } catch (JSONException e) {
+            //e.printStackTrace();
+        }
+        return newsList;
+    }
+
+
+    class InitAsyncTask extends AsyncTask<Integer, Integer, String> {
+        private JSONArray newsList = null;
+
+        @Override
+        protected String doInBackground(Integer... integers) {
+            newsList = getNewsList(0);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (newsList == null || newsList.length() == 0) {
+                newsList = loadNewsListFromDB();
+            }
+            if (newsList != null) {
+                for (int i = 0; i < newsList.length(); ++i) {
+                    try {
+                        mContentItems.add(newsList.getJSONObject(i));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                saveNewsList();
+                mAdapter.notifyDataSetChanged();
+            }
+            mLoading = false;
+            mRefreshLayout.setRefreshing(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            mRefreshLayout.setRefreshing(true);
+        }
+    }
+
+    class UpdateAsyncTask extends AsyncTask<Integer, Integer, String> {
+        private JSONArray tmpNewsList = null;
+
+        @Override
+        protected String doInBackground(Integer... integers) {
+            tmpNewsList = getNewsList(1);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (tmpNewsList == null || tmpNewsList.length() == 0) {
+                showToast("No updated news");
+            } else {
+                List<Object> tmpContentItems = new ArrayList<>();
+                boolean flag = false;
+                Set<Long> set = new HashSet<>();
+                for (int i = 0; i < mContentItems.size(); ++i) {
+                    set.add(getNewsIdFromJson((JSONObject)(mContentItems.get(i))));
+                }
+                for (int i = 0; i < tmpNewsList.length(); ++i) {
+                    try {
+                        JSONObject obj = tmpNewsList.getJSONObject((i));
+                        Long newsId = getNewsIdFromJson(obj);
+                        if (!set.contains(newsId)) {
+                            flag = true;
+                            tmpContentItems.add(obj);
+                        }
+                    } catch (JSONException e) {
+                        System.out.println(e);
+                        //e.printStackTrace();
+                    }
+                }
+                if (flag) {
+                    showToast("Updated news has loaded");
+                    for (int i = 0; i < mContentItems.size(); ++i) {
+                        tmpContentItems.add(mContentItems.get(i));
+                    }
+                    mContentItems = tmpContentItems;
+                    saveNewsList();
+                    mAdapter.updateList(mContentItems);
+                } else {
+                    showToast("No updated news");
+                }
+            }
+            mLoading = false;
+            mRefreshLayout.setRefreshing(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            mRefreshLayout.setRefreshing(true);
+        }
+    }
+
+
+    class GetOlderAsyncTask extends AsyncTask<Integer, Integer, String> {
+        private JSONArray tmpNewsList = null;
+
+        @Override
+        protected String doInBackground(Integer... integers) {
+            tmpNewsList = getNewsList(2);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (mNextId == -1) {
+                showToast("No older news");
+            } else {
+                List<Object> tmpContentItems = new ArrayList<>();
+                tmpContentItems.addAll(mContentItems);
+                if (tmpNewsList == null || tmpNewsList.length() == 0) {
+                    showToast("No older news");
+                } else {
+                    showToast("Older news has loaded");
+                    for (int i = 0; i < tmpNewsList.length(); ++i) {
+                        try {
+                            tmpContentItems.add(tmpNewsList.getJSONObject(i));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    mContentItems = tmpContentItems;
+                    saveNewsList();
+                    mAdapter.updateList(mContentItems);
+                }
+            }
+            mLoading = false;
+            mRefreshLayout.setRefreshing(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            mRefreshLayout.setRefreshing(true);
+        }
+    }
 }
+
+
+
