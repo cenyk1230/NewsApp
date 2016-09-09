@@ -2,6 +2,7 @@ package com.ihandy.a2014011415;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -326,25 +327,34 @@ public class MainActivity extends AppCompatActivity
                 //System.out.println(page);
                 switch (page) {
                     case 0:
-                        return HeaderDesign.fromColorResAndUrl(
-                                R.color.green,
-                                "https://fs01.androidpit.info/a/63/0e/android-l-wallpapers-630ea6-h900.jpg");
+                        return HeaderDesign.fromColorAndUrl(
+                                Color.WHITE,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxtqIQAl0AAlfqqfq6fEAALHrQL2SRcACV_C325.jpg");
                     case 1:
                         return HeaderDesign.fromColorResAndUrl(
-                                R.color.blue,
-                                "http://cdn1.tnwcdn.com/wp-content/blogs.dir/1/files/2014/06/wallpaper_51.jpg");
+                                R.color.cyan,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIdDnTAAeeucd7V_kAALHrgEghoQAB57R951.jpg");
                     case 2:
                         return HeaderDesign.fromColorResAndUrl(
-                                R.color.cyan,
-                                "http://www.droid-life.com/wp-content/uploads/2014/10/lollipop-wallpapers10.jpg");
+                                R.color.blue,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIBse3AAYCe8hdaXMAALHrgGo8cUABgKT703.jpg");
                     case 3:
                         return HeaderDesign.fromColorResAndUrl(
+                                R.color.purple,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxtqIXy1OAAi9LK5qQwgAALHrQK3PAoACL1E420.jpg");
+                    case 4:
+                        return HeaderDesign.fromColorResAndUrl(
                                 R.color.red,
-                                "http://www.tothemobile.com/wp-content/uploads/2014/07/original.jpg");
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxr-IcOo6AAP2TZRDqxIAALHpwCb7wwAA_Zl187.jpg");
+                    case 5:
+                        return HeaderDesign.fromColorAndUrl(
+                                Color.parseColor("#FF8C00"),
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxv6IZ2B4AAnNuJxJwggAALHtgCDixUACc3Q752.jpg");
+                    case 6:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.lime,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxuaIFf-LAAfmjVhkIBUAALHsAJ77rgAB-al019.jpg");
                 }
-
-                //execute others actions if needed (ex : modify your header logo)
-
                 return null;
             }
         });
