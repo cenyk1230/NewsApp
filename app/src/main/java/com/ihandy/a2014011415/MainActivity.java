@@ -327,33 +327,33 @@ public class MainActivity extends AppCompatActivity
                 //System.out.println(page);
                 switch (page) {
                     case 0:
-                        return HeaderDesign.fromColorAndUrl(
-                                Color.WHITE,
-                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxtqIQAl0AAlfqqfq6fEAALHrQL2SRcACV_C325.jpg");
-                    case 1:
                         return HeaderDesign.fromColorResAndUrl(
                                 R.color.cyan,
                                 "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIdDnTAAeeucd7V_kAALHrgEghoQAB57R951.jpg");
-                    case 2:
+                    case 1:
                         return HeaderDesign.fromColorResAndUrl(
                                 R.color.blue,
                                 "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKxtyIBse3AAYCe8hdaXMAALHrgGo8cUABgKT703.jpg");
-                    case 3:
+                    case 2:
                         return HeaderDesign.fromColorResAndUrl(
                                 R.color.purple,
                                 "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxtqIXy1OAAi9LK5qQwgAALHrQK3PAoACL1E420.jpg");
-                    case 4:
+                    case 3:
                         return HeaderDesign.fromColorResAndUrl(
                                 R.color.red,
                                 "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxr-IcOo6AAP2TZRDqxIAALHpwCb7wwAA_Zl187.jpg");
-                    case 5:
+                    case 4:
                         return HeaderDesign.fromColorAndUrl(
                                 Color.parseColor("#FF8C00"),
                                 "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxv6IZ2B4AAnNuJxJwggAALHtgCDixUACc3Q752.jpg");
-                    case 6:
+                    case 5:
                         return HeaderDesign.fromColorResAndUrl(
                                 R.color.lime,
                                 "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJ1bKxuaIFf-LAAfmjVhkIBUAALHsAJ77rgAB-al019.jpg");
+                    case 6:
+                        return HeaderDesign.fromColorResAndUrl(
+                                R.color.green,
+                                "http://desk.fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/03/ChMkJlbKx1KIfcrjABed5wqRc1YAALHyACZPYYAF53_331.jpg");
                 }
                 return null;
             }
