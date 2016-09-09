@@ -267,7 +267,11 @@ public class MainActivity extends AppCompatActivity
 
         imageLoader = new AsyncImageLoader(getApplicationContext());
         imageLoader.setCache2File(true);
-        imageLoader.setCachedDir(this.getCacheDir().getAbsolutePath());
+        String cachedDir = context.getExternalFilesDir("").getAbsolutePath() + "/pictures";
+        if (!new File(cachedDir).exists()) {
+            new File(cachedDir).mkdirs();
+        }
+        imageLoader.setCachedDir(cachedDir);
 
         mNaviView = (NavigationView) findViewById(R.id.nav_view);
         mNaviView.setItemIconTintList(null);

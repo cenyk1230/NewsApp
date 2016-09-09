@@ -1,6 +1,7 @@
 package com.ihandy.a2014011415;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -15,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class WebViewActivity extends AppCompatActivity {
@@ -121,20 +123,23 @@ public class WebViewActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-//        if (picUrl == null) {
-//            intent.setType("text/plain");
-//        } else {
-//            String fileName = LoaderImpl.getMD5Str(picUrl);
-//            File picFile = new File(this.getCacheDir().getAbsolutePath() + "/" + fileName);
-//            if (picFile != null && picFile.exists() && picFile.isFile()) {
-//                intent.setType("image/*");
-//                Uri u = Uri.fromFile(picFile);
-//                intent.putExtra(Intent.EXTRA_STREAM, u);
-//            } else {
-//                intent.setType("text/plain");
-//            }
-//        }
-        intent.setType("text/plain");
+        if (picUrl == null) {
+            intent.setType("text/plain");
+        } else {
+            String fileName = LoaderImpl.getMD5Str(picUrl);
+            File picFile = new File(getApplicationContext().getExternalFilesDir("").getAbsolutePath() + "/pictures/" + fileName + ".png");
+            //System.out.println(getApplicationContext().getExternalFilesDir("").getAbsolutePath() + "/pictures/" + fileName + ".png" + " isExist: " + picFile.exists() + " isFile: " + picFile.isFile());
+            if (picFile != null && picFile.exists() && picFile.isFile()) {
+                intent.setType("image/png");
+                Uri u = Uri.fromFile(picFile);
+                //System.out.println(picFile);
+                //System.out.println(u);
+                intent.putExtra(Intent.EXTRA_STREAM, u);
+            } else {
+                intent.setType("text/plain");
+            }
+        }
+        //intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
         String text = "Title: " + title + "\n";
         if (newsUrl != null) {

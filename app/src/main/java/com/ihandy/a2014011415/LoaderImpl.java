@@ -72,7 +72,8 @@ public class LoaderImpl {
                 if(cache2FileFlag){
                     //2.缓存bitmap至/data/data/packageName/cache/文件夹中
                     String fileName = getMD5Str(url);
-                    String filePath = this.cachedDir + "/" +fileName;
+                    String filePath = this.cachedDir + "/" +fileName + ".png";
+                    //System.out.println(url + "  " + filePath);
                     FileOutputStream fos = new FileOutputStream(filePath);
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
                 }
@@ -124,7 +125,7 @@ public class LoaderImpl {
         if(fileName == null)
             return null;
 
-        String filePath = cachedDir + "/" + fileName;
+        String filePath = cachedDir + "/" + fileName + ".png";
 
         try {
             FileInputStream fis = new FileInputStream(filePath);
